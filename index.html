@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!--
+  index.html — الصفحة الوحيدة في التطبيق.
+  كل الشاشات تُرسم داخل <main id="app"> بواسطة ملف js/app.js
+  لتشغيل التطبيق: افتح هذا الملف في المتصفح (نقرتين).
+-->
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ألوان سهلة</title>
+  <meta name="description" content="Choose harmonious color palettes with no design experience.">
+
+  <!-- الخطوط من Google Fonts: Tajawal للعربية و Inter للإنجليزية -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- الشريط العلوي (يُملأ من app.js) -->
+  <header id="topbar" class="topbar"></header>
+
+  <!-- هنا تظهر الشاشات -->
+  <main id="app" class="container"></main>
+
+  <!-- رسالة صغيرة مؤقتة (مثل "تم النسخ") -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <!-- ترتيب الملفات مهم: الترجمة أولاً، ثم الأدوات، ثم التطبيق -->
+  <script src="js/i18n.js"></script>
+  <script src="js/colors.js"></script>
+  <script src="js/palettes.js"></script>
+  <script src="js/drag.js"></script>
+  <script src="js/wheel.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,257 @@
+/* =========================================================================
+   i18n.js — ملف الترجمة
+   كل نصوص التطبيق (عربي + إنجليزي) موجودة هنا فقط.
+   لإضافة لغة جديدة: انسخ كتلة "en" كاملة، غيّر اسمها (مثلاً "fr")، وترجم القيم.
+   ملاحظة: {n} أو {audience} داخل النص تُستبدل تلقائياً بقيمة حقيقية.
+   ========================================================================= */
+
+const TRANSLATIONS = {
+  /* ----------------------------- العربية ----------------------------- */
+  ar: {
+    'lang.dir': 'rtl',
+    'lang.switch': 'English',
+
+    'app.name': 'ألوان سهلة',
+    'app.tagline': 'اختر ألواناً متناسقة بدون أي خبرة',
+
+    'home.title': 'ألوان متناسقة بلمسة واحدة',
+    'home.subtitle': 'اختر ما يناسبك، ونحن نساعدك في الباقي. لا تحتاج أي خبرة في التصميم.',
+
+    'aud.beginner.title': 'مبتدئ في الألوان',
+    'aud.beginner.desc': 'ابدأ من الصفر بخطوات سهلة وواضحة.',
+    'aud.beginner.tip': 'نصيحة: ابدأ بلوحة بسيطة من 3 ألوان، فهي الأسهل في الاستخدام.',
+    'aud.business.title': 'أصحاب الأعمال',
+    'aud.business.desc': 'ألوان تعطي مشروعك مظهراً احترافياً وموثوقاً.',
+    'aud.business.tip': 'نصيحة: الألوان الهادئة والفاخرة تبني الثقة مع العملاء.',
+    'aud.creator.title': 'صنّاع المحتوى',
+    'aud.creator.desc': 'ألوان تلفت الانتباه في المنشورات والفيديوهات.',
+    'aud.creator.tip': 'نصيحة: الألوان الجريئة تجعل منشوراتك تبرز أثناء التمرير.',
+    'aud.identity.title': 'هوية تشبهك',
+    'aud.identity.desc': 'ألوان تعبّر عن شخصيتك أو علامتك الخاصة.',
+    'aud.identity.tip': 'نصيحة: اختر ألواناً تشعر أنها تمثلك، ثم ثبّتها في كل أعمالك.',
+
+    'methods.title': 'كيف تحب أن تبدأ؟',
+    'methods.subtitle': 'القسم: {audience}',
+    'method.upload.title': 'ارفع صورة',
+    'method.upload.desc': 'نستخرج الألوان من صورتك ونشرح لماذا تنجح.',
+    'method.describe.title': 'صِف فكرتك',
+    'method.describe.desc': 'أجب عن أسئلة بسيطة أو اكتب لوناً تحبه.',
+    'method.ready.title': 'لوحات جاهزة',
+    'method.ready.desc': 'لوحات منسّقة مسبقاً حسب الأسلوب.',
+    'method.free.title': 'اختيار حر',
+    'method.free.desc': 'اسحب الألوان وكوّن لوحتك بنفسك.',
+
+    'common.soon': 'قريباً',
+    'common.back': 'رجوع',
+    'common.home': 'الرئيسية',
+    'common.recommended': 'مقترح لك',
+
+    'style.minimal': 'بسيط عصري',
+    'style.luxury': 'فاخر',
+    'style.bold': 'جريء',
+    'style.earthy': 'ترابي',
+    'style.retro': 'كلاسيكي قديم',
+    'style.minimal.desc': 'هادئ، نظيف، ومساحات بيضاء.',
+    'style.luxury.desc': 'أسود، ذهبي، كحلي، وعنابي.',
+    'style.bold.desc': 'تباين قوي وألوان حيوية.',
+    'style.earthy.desc': 'بيج، زيتوني، بني، وتيراكوتا.',
+    'style.retro.desc': 'درجات دافئة باهتة بروح قديمة.',
+
+    'ready.title': 'لوحات جاهزة',
+    'ready.subtitle': 'اضغط على أي لوحة لتراها بالتفصيل.',
+    'ready.size': 'عدد الألوان',
+    'ready.count': '{n} ألوان',
+
+    'result.title': 'لوحتك',
+    'result.subtitle': 'اضغط على كود اللون لنسخه.',
+    'result.ratioTitle': 'قاعدة 60-30-10',
+    'result.ratioHint': 'استخدم اللون الأساسي في 60% من التصميم، والثانوي في 30%، ولون التمييز في 10% فقط.',
+    'result.regenerate': 'لون آخر',
+    'result.edit': 'عدّل في الاختيار الحر',
+    'result.backReady': 'لوحات جاهزة أخرى',
+    'result.copied': 'تم النسخ: {n}',
+    'role.main': 'أساسي',
+    'role.secondary': 'ثانوي',
+    'role.accent': 'تمييز',
+
+    'free.title': 'اختيار حر',
+    'free.hint': 'اسحب أي لون إلى لوحتك، أو اضغط عليه فقط لإضافته.',
+    'free.yourPalette': 'لوحتك',
+    'free.empty': 'لوحتك فارغة. اسحب لوناً إلى هنا أو اضغط على أي لون بالأسفل.',
+    'free.selectHint': 'اضغط على لون في لوحتك لتحديده، واسحبه لتغيير ترتيبه.',
+    'free.delete': 'حذف',
+    'free.clear': 'مسح الكل',
+    'free.seeResult': 'اعرض النتيجة',
+    'free.suggestions': 'اقتراحات',
+    'free.refresh': 'اقتراحات جديدة',
+    'free.wheel': 'عجلة الألوان',
+    'free.wheelHint': 'اضغط على العجلة لاختيار لون.',
+    'free.lightness': 'الإضاءة',
+    'free.add': 'أضف إلى لوحتي',
+    'free.readyPalettes': 'من اللوحات الجاهزة',
+    'free.full': 'اللوحة ممتلئة (الحد الأقصى {n} ألوان).',
+    'free.needTwo': 'أضف لونين على الأقل لعرض النتيجة.',
+
+    /* أسماء اللوحات الجاهزة */
+    'pal.m1': 'استوديو نظيف', 'pal.m2': 'مريمية ناعمة', 'pal.m3': 'أزرق شمالي', 'pal.m4': 'رمادي دافئ',
+    'pal.l1': 'أسود وذهبي', 'pal.l2': 'كحلي ملكي', 'pal.l3': 'مخمل عنابي', 'pal.l4': 'ليل زمردي',
+    'pal.b1': 'انفجار كهربائي', 'pal.b2': 'غروب قوي', 'pal.b3': 'ليل النيون', 'pal.b4': 'ألوان أساسية',
+    'pal.e1': 'بستان الزيتون', 'pal.e2': 'طين الصحراء', 'pal.e3': 'بيت التيراكوتا', 'pal.e4': 'أرض الغابة',
+    'pal.r1': 'السبعينات', 'pal.r2': 'بطاقة بريدية', 'pal.r3': 'مطعم قديم', 'pal.r4': 'فيلم قديم',
+
+    /* أسماء الألوان (تُستخدم لتسمية أي لون تلقائياً) */
+    'color.white': 'أبيض', 'color.offwhite': 'أبيض مطفي', 'color.ivory': 'عاجي', 'color.cream': 'كريمي',
+    'color.beige': 'بيج', 'color.sand': 'رملي', 'color.tan': 'بني فاتح', 'color.camel': 'جملي',
+    'color.caramel': 'كراميل', 'color.brown': 'بني', 'color.chocolate': 'شوكولاتة', 'color.coffee': 'قهوة',
+    'color.black': 'أسود', 'color.charcoal': 'فحمي', 'color.darkgray': 'رمادي داكن', 'color.gray': 'رمادي',
+    'color.silver': 'فضي', 'color.lightgray': 'رمادي فاتح', 'color.navy': 'كحلي', 'color.midnight': 'أزرق ليلي',
+    'color.royalblue': 'أزرق ملكي', 'color.blue': 'أزرق', 'color.skyblue': 'أزرق سماوي', 'color.babyblue': 'أزرق فاتح',
+    'color.teal': 'أزرق بترولي', 'color.turquoise': 'فيروزي', 'color.cyan': 'سماوي زاهي', 'color.mint': 'نعناعي',
+    'color.sage': 'أخضر مريمي', 'color.olive': 'زيتوني', 'color.olivegreen': 'أخضر زيتوني', 'color.moss': 'أخضر طحلبي',
+    'color.forest': 'أخضر غابات', 'color.emerald': 'زمردي', 'color.green': 'أخضر', 'color.lime': 'ليموني',
+    'color.neongreen': 'أخضر نيون', 'color.yellow': 'أصفر', 'color.mustard': 'خردلي', 'color.gold': 'ذهبي',
+    'color.orange': 'برتقالي', 'color.burntorange': 'برتقالي محروق', 'color.terracotta': 'تيراكوتا', 'color.rust': 'صدئي',
+    'color.coral': 'مرجاني', 'color.peach': 'خوخي', 'color.salmon': 'سلموني', 'color.pink': 'وردي',
+    'color.hotpink': 'وردي فاقع', 'color.rose': 'وردي عتيق', 'color.red': 'أحمر', 'color.crimson': 'قرمزي',
+    'color.burgundy': 'عنابي', 'color.wine': 'نبيذي', 'color.maroon': 'كستنائي', 'color.purple': 'بنفسجي',
+    'color.lavender': 'لافندر', 'color.plum': 'برقوقي', 'color.mauve': 'موف', 'color.dustyblue': 'أزرق باهت',
+    'color.slate': 'أردوازي', 'color.stone': 'حجري', 'color.taupe': 'رمادي بني', 'color.darkgreen': 'أخضر داكن',
+  },
+
+  /* ----------------------------- English ----------------------------- */
+  en: {
+    'lang.dir': 'ltr',
+    'lang.switch': 'العربية',
+
+    'app.name': 'Easy Palette',
+    'app.tagline': 'Harmonious colors, no expertise needed',
+
+    'home.title': 'Harmonious colors in one tap',
+    'home.subtitle': 'Pick what fits you and we will handle the rest. No design experience needed.',
+
+    'aud.beginner.title': 'Color beginner',
+    'aud.beginner.desc': 'Start from zero with simple, clear steps.',
+    'aud.beginner.tip': 'Tip: start with a simple 3-color palette. It is the easiest to use.',
+    'aud.business.title': 'Business owners',
+    'aud.business.desc': 'Colors that make your business look professional and trustworthy.',
+    'aud.business.tip': 'Tip: calm and luxurious colors build trust with customers.',
+    'aud.creator.title': 'Content creators',
+    'aud.creator.desc': 'Eye-catching colors for posts and videos.',
+    'aud.creator.tip': 'Tip: bold colors make your posts stand out while people scroll.',
+    'aud.identity.title': 'Identity that fits you',
+    'aud.identity.desc': 'Colors that express your personality or personal brand.',
+    'aud.identity.tip': 'Tip: choose colors that feel like you, then use them everywhere.',
+
+    'methods.title': 'How would you like to start?',
+    'methods.subtitle': 'Section: {audience}',
+    'method.upload.title': 'Upload an image',
+    'method.upload.desc': 'We pull the colors from your image and explain why they work.',
+    'method.describe.title': 'Describe your idea',
+    'method.describe.desc': 'Answer a few simple questions or type a color you like.',
+    'method.ready.title': 'Ready palettes',
+    'method.ready.desc': 'Curated palettes grouped by style.',
+    'method.free.title': 'Free picking',
+    'method.free.desc': 'Drag colors and build your own palette.',
+
+    'common.soon': 'Coming soon',
+    'common.back': 'Back',
+    'common.home': 'Home',
+    'common.recommended': 'Recommended',
+
+    'style.minimal': 'Minimal modern',
+    'style.luxury': 'Luxury',
+    'style.bold': 'Bold',
+    'style.earthy': 'Earthy',
+    'style.retro': 'Retro / vintage',
+    'style.minimal.desc': 'Calm, clean, lots of white space.',
+    'style.luxury.desc': 'Black, gold, navy and burgundy.',
+    'style.bold.desc': 'Strong contrast and vivid colors.',
+    'style.earthy.desc': 'Beige, olive, brown and terracotta.',
+    'style.retro.desc': 'Warm, faded tones with an old soul.',
+
+    'ready.title': 'Ready palettes',
+    'ready.subtitle': 'Tap any palette to see it in detail.',
+    'ready.size': 'Number of colors',
+    'ready.count': '{n} colors',
+
+    'result.title': 'Your palette',
+    'result.subtitle': 'Tap a color code to copy it.',
+    'result.ratioTitle': 'The 60-30-10 rule',
+    'result.ratioHint': 'Use the main color in 60% of your design, the secondary in 30%, and the accent in only 10%.',
+    'result.regenerate': 'Another color',
+    'result.edit': 'Edit in free picking',
+    'result.backReady': 'More ready palettes',
+    'result.copied': 'Copied: {n}',
+    'role.main': 'Main',
+    'role.secondary': 'Secondary',
+    'role.accent': 'Accent',
+
+    'free.title': 'Free picking',
+    'free.hint': 'Drag any color into your palette, or just tap it to add it.',
+    'free.yourPalette': 'Your palette',
+    'free.empty': 'Your palette is empty. Drag a color here or tap any color below.',
+    'free.selectHint': 'Tap a color in your palette to select it; drag it to reorder.',
+    'free.delete': 'Delete',
+    'free.clear': 'Clear all',
+    'free.seeResult': 'See result',
+    'free.suggestions': 'Suggestions',
+    'free.refresh': 'New suggestions',
+    'free.wheel': 'Color wheel',
+    'free.wheelHint': 'Tap the wheel to pick a color.',
+    'free.lightness': 'Lightness',
+    'free.add': 'Add to my palette',
+    'free.readyPalettes': 'From ready palettes',
+    'free.full': 'Palette is full (maximum {n} colors).',
+    'free.needTwo': 'Add at least two colors to see the result.',
+
+    'pal.m1': 'Clean Studio', 'pal.m2': 'Soft Sage', 'pal.m3': 'Nordic Blue', 'pal.m4': 'Warm Gray',
+    'pal.l1': 'Black & Gold', 'pal.l2': 'Royal Navy', 'pal.l3': 'Burgundy Velvet', 'pal.l4': 'Emerald Night',
+    'pal.b1': 'Electric Pop', 'pal.b2': 'Sunset Punch', 'pal.b3': 'Neon Night', 'pal.b4': 'Primary Play',
+    'pal.e1': 'Olive Grove', 'pal.e2': 'Desert Clay', 'pal.e3': 'Terracotta Home', 'pal.e4': 'Forest Floor',
+    'pal.r1': 'Seventies', 'pal.r2': 'Faded Postcard', 'pal.r3': 'Old Diner', 'pal.r4': 'Old Film',
+
+    'color.white': 'White', 'color.offwhite': 'Off-white', 'color.ivory': 'Ivory', 'color.cream': 'Cream',
+    'color.beige': 'Beige', 'color.sand': 'Sand', 'color.tan': 'Tan', 'color.camel': 'Camel',
+    'color.caramel': 'Caramel', 'color.brown': 'Brown', 'color.chocolate': 'Chocolate', 'color.coffee': 'Coffee',
+    'color.black': 'Black', 'color.charcoal': 'Charcoal', 'color.darkgray': 'Dark gray', 'color.gray': 'Gray',
+    'color.silver': 'Silver', 'color.lightgray': 'Light gray', 'color.navy': 'Navy', 'color.midnight': 'Midnight blue',
+    'color.royalblue': 'Royal blue', 'color.blue': 'Blue', 'color.skyblue': 'Sky blue', 'color.babyblue': 'Baby blue',
+    'color.teal': 'Teal', 'color.turquoise': 'Turquoise', 'color.cyan': 'Cyan', 'color.mint': 'Mint',
+    'color.sage': 'Sage', 'color.olive': 'Olive', 'color.olivegreen': 'Olive green', 'color.moss': 'Moss green',
+    'color.forest': 'Forest green', 'color.emerald': 'Emerald', 'color.green': 'Green', 'color.lime': 'Lime',
+    'color.neongreen': 'Neon green', 'color.yellow': 'Yellow', 'color.mustard': 'Mustard', 'color.gold': 'Gold',
+    'color.orange': 'Orange', 'color.burntorange': 'Burnt orange', 'color.terracotta': 'Terracotta', 'color.rust': 'Rust',
+    'color.coral': 'Coral', 'color.peach': 'Peach', 'color.salmon': 'Salmon', 'color.pink': 'Pink',
+    'color.hotpink': 'Hot pink', 'color.rose': 'Dusty rose', 'color.red': 'Red', 'color.crimson': 'Crimson',
+    'color.burgundy': 'Burgundy', 'color.wine': 'Wine', 'color.maroon': 'Maroon', 'color.purple': 'Purple',
+    'color.lavender': 'Lavender', 'color.plum': 'Plum', 'color.mauve': 'Mauve', 'color.dustyblue': 'Dusty blue',
+    'color.slate': 'Slate', 'color.stone': 'Stone', 'color.taupe': 'Taupe', 'color.darkgreen': 'Dark green',
+  },
+};
+
+/* اللغة الحالية — نقرؤها من ذاكرة المتصفح إن وُجدت، وإلا العربية */
+let currentLang = 'ar';
+try {
+  const saved = localStorage.getItem('lang');
+  if (saved && TRANSLATIONS[saved]) currentLang = saved;
+} catch (e) { /* بعض المتصفحات تمنع الذاكرة، لا مشكلة */ }
+
+/**
+ * t = "translate": تعطيه مفتاحاً فيرجع النص باللغة الحالية.
+ * مثال: t('ready.count', { n: 5 })  ←  "5 ألوان"
+ */
+function t(key, vars) {
+  let text = TRANSLATIONS[currentLang][key];
+  if (text === undefined) text = TRANSLATIONS.en[key]; // احتياط: الإنجليزية
+  if (text === undefined) return key;                   // احتياط أخير: المفتاح نفسه
+  if (vars) {
+    for (const name in vars) text = text.split('{' + name + '}').join(vars[name]);
+  }
+  return text;
+}
+
+/* تغيير اللغة وحفظها */
+function setLang(lang) {
+  currentLang = lang;
+  try { localStorage.setItem('lang', lang); } catch (e) { /* تجاهل */ }
+}
