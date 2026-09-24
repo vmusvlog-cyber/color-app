@@ -38,6 +38,8 @@ js/drag.js        Drag-and-drop (mouse + touch) used by free picking
 js/wheel.js       The color wheel drawn on a canvas
 js/generator.js   Palette generation (quiz answers / user colors), style detection,
                   color families & meanings, competitor colors, color-name lookup
+js/refine.js      "Refine the result" panel: feeling, warm/cool, harmony, saturation,
+                  brightness, contrast (logic + panel UI)
 js/fonts.js       Font pairings per style (Google Fonts) and the font loader
 js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
 js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
@@ -71,6 +73,15 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       publish to gallery, account palettes (local ones migrate on first sign-in), feedback
       sent to the `feedback` table (owner reads `feedback_readable`). Schema + RLS tested on
       local PostgreSQL; app tested against a mocked Supabase API with the real supabase-js.
+- [x] Extra (owner's 10 answers): "🎯 Refine the result" panel, always open, on the quiz
+      options, "I have colors", image "suggest adjustments" and ready palettes. Options (each
+      starts at Auto): feeling (11: trust, pro, calm, energy, excite, warm, luxury, creative,
+      joy, nature, health), warm/cool, harmony (complementary/analogous/triadic/mono — when
+      chosen, all 3 palettes use it), saturation, brightness, contrast. Quiz has a 6th
+      question "feeling" (4th in order, with "choose for me"); mood images kept (feeling sets
+      hue, mood sets intensity). User's own colors are never changed. Brand roles: primary,
+      secondary, accent, neutral, support. Labels: simple word + small hint.
+- [x] Extra: result cards have previous/next arrows with per-color history (2/3 counter).
 - [ ] Phase 6
 
 ---

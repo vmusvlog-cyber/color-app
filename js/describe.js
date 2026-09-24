@@ -12,6 +12,7 @@ const QUIZ = [
   { key: 'industry', type: 'text', options: ['food', 'fashion', 'tech', 'health', 'education', 'finance', 'home', 'kids', 'creative', 'other'], label: 'ind.' },
   { key: 'who',      type: 'text', options: ['kids', 'youth', 'women', 'men', 'families', 'professionals', 'everyone'], label: 'who.' },
   { key: 'use',      type: 'text', options: ['social', 'brand', 'web', 'print', 'slides'], label: 'use.' },
+  { key: 'feel',     type: 'text', options: ['auto', ...Object.keys(FEELINGS)], label: 'refine.feel.' },
   { key: 'mood',     type: 'mood', options: Object.keys(MOODS), label: 'mood.' },
   { key: 'style',    type: 'style', options: STYLES, label: 'style.' },
 ];
@@ -50,7 +51,10 @@ function renderQuiz(audience, fresh) {
   const optionHtml = (opt) => {
     const selected = chosen === opt ? 'selected' : '';
     if (q.type === 'text') {
-      return `<button type="button" class="choice-chip ${selected}" data-value="${opt}">${t(q.label + opt)}</button>`;
+      // سؤال الإحساس: نقطة ملوّنة بجانب كل إحساس، و"دعنا نختار لك" بدون نقطة
+      const dot = q.key === 'feel' && opt !== 'auto' ? feelingDot(opt) : '';
+      const label = q.key === 'feel' && opt === 'auto' ? t('feel.auto') : t(q.label + opt);
+      return `<button type="button" class="choice-chip ${selected}" data-value="${opt}">${dot}${label}</button>`;
     }
     const picture = q.type === 'mood' ? moodScene(opt) : styleScene(opt);
     const desc = q.type === 'style' ? `<small>${t('style.' + opt + '.desc')}</small>` : '';
@@ -85,6 +89,8 @@ function renderQuiz(audience, fresh) {
       } else {
         // انتهت الأسئلة ← نذهب لشاشة اللوحات الثلاث ومعنا الإجابات في الرابط
         const a = state.quiz.answers;
+        // إجابة الإحساس تصبح أول اختيار في لوحة "دقّق النتيجة" (ويمكن تغييرها هناك)
+        state.refine = { ...defaultRefine(), feel: a.feel === 'auto' ? '' : a.feel };
         location.hash = `#/options/${audience.id}?mode=quiz&ind=${a.industry}&who=${a.who}&use=${a.use}&mood=${a.mood}&s=${a.style}`;
       }
     });
@@ -200,9 +206,10 @@ function renderChosenList() {
 
 /* ---------- 3 لوحات مقترحة ---------- */
 function renderOptions(audience, params) {
-  // نصنع اللوحات مرة واحدة لكل رابط، حتى لا تتغير عند تبديل اللغة
-  if (state.options.hash !== location.hash) {
-    state.options = { hash: location.hash, list: makeOptions(params) };
+  // نصنع اللوحات مرة واحدة لكل رابط ولكل اختيارات "دقّق"، حتى لا تتغير عند تبديل اللغة
+  const key = location.hash + '|' + JSON.stringify(state.refine);
+  if (state.options.hash !== key) {
+    state.options = { hash: key, list: makeOptions(params) };
   }
   state.lastOptionsHash = location.hash; // لزر الرجوع من شاشة النتيجة
 
@@ -219,6 +226,8 @@ function renderOptions(audience, params) {
       <p class="lead">${t('options.subtitle')}</p>
     </header>
 
+    ${refinePanelHtml(state.refine)}
+
     <div class="options-list">
       ${state.options.list.map((opt) => `
         <a class="option-card" href="#/result/${audience.id}?c=${colorsToParam(opt.colors)}${extra}&from=options">
@@ -227,8 +236,8 @@ function renderOptions(audience, params) {
           </div>
           <div class="option-info">
             <div>
-              <h2>${t('harmony.' + opt.harmony)}</h2>
-              <p>${t('harmony.' + opt.harmony + '.desc')}</p>
+              <h2>${optionTitle(opt.harmony)}</h2>
+              <p>${optionDesc(opt.harmony)}</p>
             </div>
             <span class="btn btn-small btn-primary">${t('options.choose')}</span>
           </div>
@@ -245,16 +254,41 @@ function renderOptions(audience, params) {
     state.options.list = makeOptions(params);
     renderOptions(audience, params);
   });
+
+  // أي ضغطة في لوحة "دقّق" تعيد صنع اللوحات الثلاث فوراً (بدون القفز لأعلى الصفحة)
+  bindRefinePanel(() => renderOptions(audience, params));
+}
+
+/* عنوان ووصف كل لوحة مقترحة (أنظمة "دقّق" لها أسماء خاصة) */
+function optionTitle(harmony) {
+  return HARMONY_SHIFTS[harmony] !== undefined ? t('refine.harmony.' + harmony) : t('harmony.' + harmony);
+}
+function optionDesc(harmony) {
+  return HARMONY_SHIFTS[harmony] !== undefined ? t('refine.harmony.' + harmony + '.hint') : t('harmony.' + harmony + '.desc');
 }
 
 /* يختار طريقة الصنع حسب المصدر: من الاستبيان أو من ألوانك */
 function makeOptions(params) {
-  if (params.mode === 'image') return generateFromImage(paramToColors(params.base));
-  if (params.mode === 'colors') {
+  const refine = state.refine;
+  let list;
+  let locked = [];     // ألوان لا نغيّرها (ألوان المستخدم نفسه)
+
+  if (params.mode === 'image') {
+    list = generateFromImage(paramToColors(params.base));
+  } else if (params.mode === 'colors') {
     const bases = paramToColors(params.base);
-    return generateAroundColors(bases.length ? bases : ['#3A86FF']);
+    locked = bases;
+    list = generateAroundColors(bases.length ? bases : ['#3A86FF']);
+  } else {
+    list = generateFromAnswers({
+      industry: params.ind, who: params.who, use: params.use, mood: params.mood, style: params.s,
+    }, refine);
   }
-  return generateFromAnswers({
-    industry: params.ind, who: params.who, use: params.use, mood: params.mood, style: params.s,
-  });
+
+  // نطبّق باقي اختيارات "دقّق" على كل لوحة
+  const skipFeeling = params.mode !== 'image' && params.mode !== 'colors'; // في الاستبيان استُخدم الإحساس أصلاً
+  return list.map((opt) => ({
+    harmony: refine.harmony || opt.harmony,
+    colors: applyRefine(opt.colors, refine, locked, { skipFeeling }),
+  }));
 }

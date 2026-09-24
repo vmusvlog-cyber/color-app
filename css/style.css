@@ -779,6 +779,40 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* =========================================================================
+   لوحة "🎯 دقّق النتيجة"
+   ========================================================================= */
+.refine-panel {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--surface);
+  padding: 16px 18px 6px;
+  margin-bottom: 24px;
+}
+.refine-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.refine-head h2 { font-size: 1.15rem; }
+.refine-panel > .small-hint { margin: 4px 0 8px; }
+.refine-row {
+  display: grid;
+  grid-template-columns: 190px 1fr;
+  gap: 8px 16px;
+  align-items: start;
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+.refine-label { display: flex; flex-direction: column; line-height: 1.35; }
+.refine-label small { color: var(--muted); font-size: .8rem; }
+.refine-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--bg); }
+.refine-chip .chip-text { display: flex; flex-direction: column; line-height: 1.25; text-align: start; }
+.refine-chip .chip-text small { font-weight: 400; font-size: .72rem; color: var(--muted); }
+.refine-chip.selected .chip-text small { color: rgba(255,255,255,.75); }
+.refine-chip svg { flex-shrink: 0; }
+.choice-chip .dot { width: 12px; height: 12px; margin-inline-end: 4px; vertical-align: -1px; }
+@media (max-width: 700px) {
+  .refine-row { grid-template-columns: 1fr; }
+  .refine-panel { padding: 14px 12px 4px; }
+}
+
+/* =========================================================================
    الشاشات الصغيرة (آيباد ثم جوال)
    ========================================================================= */
 @media (max-width: 900px) {

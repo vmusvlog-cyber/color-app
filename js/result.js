@@ -62,7 +62,7 @@ function renderResult(audience, params) {
             <strong class="color-name">${colorName(c)}</strong>
             <button type="button" class="hex-btn" data-hex="${c}" dir="ltr">${c}</button>
             ${state.view.print ? `<span class="cmyk" dir="ltr">${cmykText(c)}</span>` : ''}
-            <span class="role">${roleName(i)}</span>
+            <span class="role">${roleName(i, c)}</span>
             <!-- سهمان: السابق يرجعك للون قبله، والتالي يعطيك لوناً آخر -->
             <div class="regen-nav">
               <button type="button" class="regen-arrow" data-prev="${i}" ${hist.pos[i] === 0 ? 'disabled' : ''}
@@ -85,7 +85,7 @@ function renderResult(audience, params) {
     <section class="ratio-box">
       <h2>${t('result.ratioTitle')}</h2>
       <div class="ratio-bar">
-        ${shown.map((c, i) => `<span style="flex:${weights[i]}; background:${c}" title="${roleName(i)} ${formatPercent(weights[i])}"></span>`).join('')}
+        ${shown.map((c, i) => `<span style="flex:${weights[i]}; background:${c}" title="${roleName(i, c)} ${formatPercent(weights[i])}"></span>`).join('')}
       </div>
       <p>${t('result.ratioHint')}</p>
     </section>

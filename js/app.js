@@ -30,6 +30,7 @@ const state = {
   projectName: '',                // اسم المشروع في المعاينات
   whyOpen: false,                 // هل شرح "لماذا هذه الألوان؟" مفتوح
   colorHistory: null,             // الألوان السابقة لكل بطاقة في النتيجة (للسهمين)
+  refine: defaultRefine(),        // اختيارات "دقّق النتيجة"
   // المرحلة 3
   upload: null,                   // الصورة المرفوعة وألوانها
   view: { gradients: false, dark: false, print: false }, // خيارات العرض
@@ -90,11 +91,14 @@ function ratioWeights(count) {
   return [60, 30, ...Array(count - 2).fill(accentShare)];
 }
 
-/* اسم دور اللون: أساسي / ثانوي / تمييز */
-function roleName(index) {
+/* اسم دور اللون في البراند: رئيسي / ثانوي / تمييز / محايد / مساعد
+   الألوان الإضافية (بعد الثالث): الهادئ منها "محايد" للخلفيات، والملوّن "مساعد" */
+function roleName(index, hex) {
   if (index === 0) return t('role.main');
   if (index === 1) return t('role.secondary');
-  return t('role.accent');
+  if (index === 2) return t('role.accent');
+  if (hex && hexToHsl(hex).s < 20) return t('role.neutral');
+  return t('role.support');
 }
 
 /* يكتب النسبة بشكل جميل: 60 ← "60%"، 3.333 ← "3.3%" */
@@ -205,7 +209,10 @@ function renderReady(audience) {
     state.readyStyle = styles[0];
   }
 
-  const palettes = READY_PALETTES.filter((p) => p.style === state.readyStyle);
+  // اللوحات الجاهزة بعد تطبيق اختيارات "دقّق النتيجة" (إن وُجدت)
+  const palettes = READY_PALETTES
+    .filter((p) => p.style === state.readyStyle)
+    .map((p) => ({ ...p, colors: applyRefine(p.colors, state.refine) }));
 
   app.innerHTML = `
     ${backLink('#/methods/' + audience.id)}
@@ -235,6 +242,8 @@ function renderReady(audience) {
       </div>
     </div>
 
+    ${refinePanelHtml(state.refine)}
+
     <div class="palette-grid">
       ${palettes.map((p) => {
         const colors = p.colors.slice(0, state.readySize);
@@ -257,6 +266,7 @@ function renderReady(audience) {
   app.querySelectorAll('.size-toggle button').forEach((btn) => {
     btn.addEventListener('click', () => { state.readySize = Number(btn.dataset.size); renderReady(audience); });
   });
+  bindRefinePanel(() => renderReady(audience));
 }
 
 /* =========================================================================

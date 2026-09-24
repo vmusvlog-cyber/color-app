@@ -64,14 +64,16 @@ function randIn(range) {
 /*
   يصنع 3 لوحات من إجابات الاستبيان.
   answers = { industry, who, use, mood, style }
+  refine  = اختيارات "دقّق النتيجة" (الإحساس ونظام التناسق يُستخدمان هنا مباشرة)
   يرجع: [{ harmony: 'analogous', colors: [...] }, ...]
 */
-function generateFromAnswers(answers) {
+function generateFromAnswers(answers, refine = defaultRefine()) {
   const mood = MOODS[answers.mood] || MOODS.calm;
+  const feeling = FEELINGS[refine.feel];
   const template = STYLE_TEMPLATES[answers.style] || STYLE_TEMPLATES.minimal;
 
   // تعديلات حسب الجمهور والاستخدام
-  let satMul = mood.sat;
+  let satMul = mood.sat * (feeling && feeling.sat ? feeling.sat : 1);
   if (answers.who === 'kids') satMul *= 1.2;                 // الأطفال: ألوان أقوى
   if (answers.who === 'professionals') satMul *= 0.8;        // الشركات: ألوان أهدأ
   const maxSat = answers.use === 'print' ? 80 : 100;         // الطباعة: نتجنب الألوان الفسفورية
@@ -79,7 +81,27 @@ function generateFromAnswers(answers) {
   // c = تصنع لوناً مع تطبيق التعديلات السابقة
   const c = (h, s, l) => hslToHex(h, Math.min(s * satMul, maxSat), l);
 
-  const baseHue = randIn(mood.hue);
+  // الإحساس (إن اختاره المستخدم) يحدد درجة اللون، وإلا نأخذها من صورة المزاج
+  const baseHue = randIn(feeling ? feeling.hue : mood.hue);
+
+  // إذا اختار نظام تناسق: الثلاث بنفس النظام، مع اختلاف بسيط في الدرجة بينها
+  if (refine.harmony) {
+    const shift = HARMONY_SHIFTS[refine.harmony];
+    // 3 نسخ: الأصلية، ونسخة أغمق وأهدأ، ونسخة أفتح وأقوى (حتى لا تتشابه)
+    const variants = [
+      { d: 0, l: 0, s: 1 },
+      { d: rand(12, 25), l: -12, s: 0.8 },
+      { d: -rand(12, 25), l: 12, s: 1.2 },
+    ];
+    return variants.map((v) => ({
+      harmony: refine.harmony,
+      colors: uniqueColors(template(baseHue + v.d, shift, c).map((hex, i) => {
+        if (i < 2) return hex; // الرئيسي والثانوي كما هما
+        const x = hexToHsl(hex);
+        return hslToHex(x.h, clamp(x.s * v.s, 5, 100), clamp(x.l + v.l, 10, 90));
+      })),
+    }));
+  }
   return HARMONIES.map((harmony) => ({
     harmony: harmony.id,
     colors: uniqueColors(template(baseHue, harmony.shift, c)),

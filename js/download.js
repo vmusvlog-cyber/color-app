@@ -260,7 +260,7 @@ async function drawPaletteCanvas(colors, title) {
     ctx.fillText(hex, cx, sy + square + 58);
     ctx.direction = isAr ? 'rtl' : 'ltr';
     ctx.font = `400 13px ${font}`;
-    ctx.fillText(roleName(i), cx, sy + square + 80);
+    ctx.fillText(roleName(i, hex), cx, sy + square + 80);
   });
 
   // شريط 60-30-10
