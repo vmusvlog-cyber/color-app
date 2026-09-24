@@ -1012,8 +1012,10 @@ body.home-page .audience-grid {
     "upload   upload   upload"
     "beginner business creator"
     "beginner business creator"
-    "identity business creator"
-    "identity business gallery";
+    "beginner identity creator"
+    "photo    identity expo"
+    "photo    decor    expo"
+    "photo    decor    expo";
   grid-auto-rows: minmax(96px, auto);
   gap: 14px;
 }
@@ -1033,14 +1035,19 @@ body.home-page .audience-card p { font-size: 1.02rem; font-weight: 500; opacity:
 /* لون كل بطاقة ولون كتابتها */
 .home-page .card-beginner { grid-area: beginner; background: var(--home-yellow); color: var(--home-red); }
 .home-page .card-beginner p { color: var(--home-green); }
-.home-page .card-business { grid-area: business; background: var(--home-green); color: var(--home-yellow); }
-.home-page .card-business p { color: var(--home-cream); }
+.home-page .card-business { grid-area: business; background: #FFFFFF; color: var(--home-green); }
+.home-page .card-business p { color: var(--home-green); }
 .home-page .card-creator  { grid-area: creator;  background: var(--home-orange); color: var(--home-yellow); }
 .home-page .card-creator p { color: #FFF6E0; }
 .home-page .card-identity { grid-area: identity; background: var(--home-red); color: var(--home-yellow); }
 .home-page .card-identity p { color: var(--home-cream); }
-.home-page .card-gallery  { grid-area: gallery;  background: var(--home-kiwi); color: var(--home-green); padding: 18px 24px; }
-.home-page .card-gallery p { color: var(--home-green); }
+.home-page .card-photo    { grid-area: photo;    background: var(--home-kiwi); color: var(--home-green); }
+.home-page .card-photo p { color: var(--home-green); }
+.home-page .card-expo     { grid-area: expo;     background: var(--home-green); color: var(--home-yellow); }
+.home-page .card-expo p { color: var(--home-cream); }
+/* ديكور وأماكن: كريمي أغمق قليلاً بإطار أخضر، حتى يظهر على خلفية الواجهة */
+.home-page .card-decor    { grid-area: decor;    background: #EADBB4; color: var(--home-green); }
+.home-page .card-decor p { color: var(--home-green); }
 
 /* آيباد عمودي: عمودان */
 @media (max-width: 900px) {
@@ -1050,15 +1057,17 @@ body.home-page .audience-card p { font-size: 1.02rem; font-weight: 500; opacity:
       "upload   upload"
       "beginner business"
       "beginner business"
-      "identity creator"
-      "identity gallery";
+      "creator  identity"
+      "creator  identity"
+      "photo    expo"
+      "photo    expo"
+      "decor    decor";
   }
 }
 /* الجوال: البطاقات تحت بعضها */
 @media (max-width: 560px) {
   body.home-page .audience-grid { grid-template-columns: 1fr; grid-template-areas: none; grid-auto-rows: auto; }
   body.home-page .audience-card { grid-area: auto; min-height: 120px; padding: 20px; }
-  body.home-page .card-gallery { min-height: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   body.home-page .audience-card:hover { transform: none; }
@@ -1209,3 +1218,8 @@ html[dir="rtl"] .page-head h1::after, html[dir="rtl"] .section-title::after { tr
   .home-page .card-upload { flex-wrap: wrap; }
   .home-page .upload-go { width: 100%; text-align: center; }
 }
+
+/* تحت أسئلة القسم: روابط صغيرة لطرق البدء الأخرى */
+.other-ways { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 16px; margin: 28px 0 0; color: var(--muted); font-size: .92rem; }
+.other-ways a { color: var(--heading); font-weight: 700; text-decoration: underline; text-underline-offset: 3px; }
+.quiz h1 { color: var(--heading); }

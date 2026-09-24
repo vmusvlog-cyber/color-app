@@ -43,8 +43,9 @@ js/refine.js      "Refine the result" panel: feeling, warm/cool, harmony, satura
 js/techniques.js  The owner's 10 marketing techniques: original colors (never changed),
                   English prompt wording, small CSS demo per technique
 js/fonts.js       Font pairings per style (Google Fonts) and the font loader
-js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
-js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
+js/describe.js    Section questions screen (#/quiz/<section>), my colors, 3 options
+js/sections.js    The 7 sections and their 1–2 questions (owner's lists); each answer maps
+                  to feel/mood/style/ind/temp/contrast/preview kind (sectionProfile)
 js/image.js       "Upload image": in-browser k-means color extraction, adjusted options
 js/variants.js    Dark version, print-safe version + CMYK, gradients, culture notes/adjust
 js/storage.js     localStorage helpers: saved palettes, simple account, feedback answers
@@ -134,6 +135,16 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       environment) and "Choose from your device"; back goes home; strip shows HEX, no percentages.
       Home shows it as a big white full-width card FIRST in the bento ("Colors from a photo",
       6-color stripe, green button); the top-bar upload button is hidden on home only.
+- [x] Restructure (owner's 7 answers): 7 sections on home — beginner (yellow), business (white),
+      creator (orange), identity (red), photo (kiwi), expo "exhibitions & events" (green), decor
+      "decor & places" (#EADBB4) — plus the "Colors from a photo" card; the small gallery card was
+      removed (gallery stays in the top bar). Tapping a section opens ITS questions directly
+      (#/quiz/<id>): beginner 1 question (10 color kinds; "one color → 3" opens My colors), all
+      others 2 questions with all 10 options shown; then straight to the 3 palettes (no feeling/
+      mood/style questions — ease first). Small links under the questions: I have colors, Ready,
+      Free. The old methods/describe screens and the drawn scenes (scenes.js) were removed
+      (#/methods and #/describe now open the questions). Answers set the Refine panel defaults and
+      go into the prompts; new preview kinds video / photo / expo with 4 prompts each.
 - [ ] Phase 6
 
 ---
@@ -145,8 +156,9 @@ Target feeling: "That was easy, I needed no expertise." Fewest steps possible, t
 UI: clean minimal white interface; the colors are the hero. Responsive (phone, iPad, desktop).
 
 ## Home
-Four equal cards laid out horizontally: Color beginner, Business owners, Content creators,
-Identity that fits you. Each opens the same four start methods (below), tuned to that audience.
+(Updated by the owner) A big "Colors from a photo" card, then 7 section cards in a colored bento:
+Color beginner, Business owners, Content creators, Identity that fits you, Photography,
+Exhibitions & events, Decor & places. Each opens its own 1–2 questions (js/sections.js).
 
 ## Start methods
 1. Upload image: extract dominant colors in the browser (canvas + k-means), detect the style,

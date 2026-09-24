@@ -15,10 +15,10 @@ let resultParams = {}; // معلومات النتيجة الحالية (تحتا
 function renderResult(audience, params) {
   resultParams = params;
   // إذا فتح المستخدم نتيجة لمجال أو مكان مختلف، نرجع للمعاينة المناسبة تلقائياً
-  const previewFor = [params.ind, params.space, params.use].join('|');
+  const previewFor = [params.ind, params.space, params.use, params.pv, params.q1, params.q2].join('|');
   if (state.previewFor !== previewFor) { state.previewFor = previewFor; state.previewKind = null; }
   const colors = paramToColors(params.c);
-  if (colors.length === 0) { location.hash = '#/methods/' + audience.id; return; }
+  if (colors.length === 0) { location.hash = '#/quiz/' + audience.id; return; }
 
   // colors = الألوان الأصلية (من الرابط)
   // shown  = ما نعرضه فعلاً بعد تطبيق "نسخة داكنة" أو "للطباعة"
@@ -38,7 +38,7 @@ function renderResult(audience, params) {
   // إلى أين يرجع زر "رجوع"
   let backHref = '#/ready/' + audience.id;
   if (params.from === 'free') backHref = '#/free/' + audience.id;
-  if (params.from === 'options') backHref = state.lastOptionsHash || '#/describe/' + audience.id;
+  if (params.from === 'options') backHref = state.lastOptionsHash || '#/quiz/' + audience.id;
   if (params.from === 'upload') backHref = '#/upload/' + audience.id;
 
   app.innerHTML = `
@@ -426,10 +426,12 @@ const PREVIEW_KINDS = [
   { id: 'logo' }, { id: 'social' }, { id: 'room' },
   { id: 'web' }, { id: 'app' }, { id: 'card' },
   { id: 'packaging' }, { id: 'menu' },
+  { id: 'video' }, { id: 'photo' }, { id: 'expo' }, // صناعة المحتوى، التصوير، المعارض
 ];
 
 /* أي معاينة تناسب إجابات المستخدم؟ */
 function defaultPreviewKind(params) {
+  if (params.pv && PREVIEW_KINDS.some((k) => k.id === params.pv)) return params.pv; // من أسئلة القسم
   if (params.space || params.ind === 'home') return 'room';
   const byUse = {
     menu: 'menu', sign: 'logo', packaging: 'packaging', interior: 'room', app: 'app', store: 'room',
@@ -457,6 +459,8 @@ function renderPreviews(colors, style) {
     colors: colors.slice(0, 5), style, feel: state.refine.feel, temp: state.refine.temp,
     space: params.space, name: state.projectName.trim(), headFont: pair.en[0],
     technique: getTechnique(params.tech),
+    // إجابات أسئلة القسم بالإنجليزية، مثل ['Café', 'Luxury']
+    section: parseHash().audience.id, answers: sectionAnswersEn(parseHash().audience.id, sectionAnswersFromParams(parseHash().audience.id, params)),
   };
   if (ctx.technique) ctx.temp = ''; // ألوان التقنية أصلية، فلا نطلب حرارة معيّنة
   const prompts = buildPrompts(kind, ctx);

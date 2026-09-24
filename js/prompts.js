@@ -49,7 +49,8 @@ function colorPhrase(hex) {
 /*
   يصنع 4 برومبتات لمكان معيّن.
   kind  = room / social / logo / web / app / card / packaging / menu
-  ctx   = { colors, style, feel, temp, space, name, headFont, technique }
+  ctx   = { colors, style, feel, temp, space, name, headFont, technique, section, answers }
+          (answers = إجابات أسئلة القسم بالإنجليزية، مثل ['Café', 'Luxury'])
   يرجع: [{ key, text }]  (key = اسم النسخة في ملف الترجمة)
 */
 function buildPrompts(kind, ctx) {
@@ -67,7 +68,43 @@ function buildPrompts(kind, ctx) {
   const tech = ctx.technique
     ? ` Apply the "${techniqueNameEn(ctx.technique)}" marketing technique: ${ctx.technique.prompt}.`
     : '';
-  const make = (key, body) => ({ key, text: `${body}${feel}${temp}.${tech} ${palette} ${quality}` });
+  const make = (key, body) => ({ key, text: `${body}${about}${feel}${temp}.${tech} ${palette} ${quality}` });
+  // إجابات القسم: السؤال الأول والثاني (بأحرف صغيرة لتندمج في الجملة)
+  const [a1 = '', a2 = ''] = (ctx.answers || []).map((x) => x.toLowerCase());
+  const about = aboutPhrase(ctx.section, a1, a2, kind);
+
+  if (kind === 'video') {
+    const type = a1 || 'social media';
+    const shot = a2 || 'medium shot';
+    return [
+      make('vframe', `Video frame still from ${an(type)} video, ${shot}, set design and wardrobe in ${c(main)} and ${c(accent)}, background wall ${c(bg)}, ${style}`),
+      make('vthumb', `Eye-catching thumbnail for ${an(type)} video by ${name}, ${c(bg)} background, big bold title in ${c(dark, main)}, highlight shape in ${c(accent)}, creator face on one side, ${style}${font}`),
+      make('vset', `Behind-the-scenes photo of a content creator studio set for ${an(type)} video, backdrop painted ${c(bg)}, furniture and props in ${c(main)}, light accents in ${c(accent)}, ${style}`),
+      make('vcover', `Vertical 9:16 video cover for ${name}, ${shot} framing, caption bars in ${c(main)} with text in ${c(bg)}, stickers and arrows in ${c(accent)}, ${style}${font}`),
+    ];
+  }
+
+  if (kind === 'photo') {
+    const subject = a1 || 'lifestyle';
+    const mood = a2 || 'natural';
+    return [
+      make('pshoot', `Professional ${mood} ${subject} photograph, color grading built on ${c(main)} and ${c(accent)} with ${c(bg)} tones, ${style}`),
+      make('pstudio', `Studio ${subject} photo shoot, seamless backdrop in ${c(bg)}, props and styling in ${c(main)}, rim light accent ${c(accent)}, ${mood} mood`),
+      make('poutdoor', `On-location ${subject} photo, ${mood} atmosphere, environment and wardrobe in ${c(main)} and ${c(support, bg)}, small pops of ${c(accent)}`),
+      make('pgrade', `Editorial ${subject} photo with a cinematic film color grade, shadows toward ${c(dark, main)}, midtones ${c(main)}, highlights ${c(bg)}, ${mood} look`),
+    ];
+  }
+
+  if (kind === 'expo') {
+    const field = a1 || 'business';
+    const place = a2 || 'booth';
+    return [
+      make('emain', `Photo of ${an(field)} exhibition ${place} for ${name}, main panels in ${c(main)}, background surfaces ${c(bg)}, headline and logo in ${c(dark, main)}, accent lighting and details in ${c(accent)}, ${style}${font}`),
+      make('ehall', `Wide photo of a busy ${field} trade show hall, the ${name} ${place} stands out in ${c(main)} and ${c(accent)} with ${c(bg)} walls, visitors walking by, ${style}`),
+      make('egraphics', `Close-up of the ${place} graphics for ${name} at ${an(field)} exhibition, large typography in ${c(dark, main)} on ${c(bg)}, color blocks in ${c(main)} and ${c(accent)}, ${style}${font}`),
+      make('enight', `Evening event photo of ${an(field)} exhibition ${place} for ${name}, warm spotlights, surfaces in ${c(main)} and ${c(bg)}, glowing accents in ${c(accent)}, ${style}`),
+    ];
+  }
 
   if (kind === 'room') {
     if (ctx.space === 'facade') {
@@ -150,8 +187,33 @@ function buildPrompts(kind, ctx) {
   ];
 }
 
+/* أداة التعريف الإنجليزية الصحيحة: "an art" و "a café" */
+function an(word) {
+  return (/^[aeiou]/i.test(word) ? 'an ' : 'a ') + word;
+}
+
+/*
+  جملة قصيرة من إجابات القسم تُضاف لبرومبتات الأماكن الأخرى (الشعار، السوشيال...):
+  مثل ", for a café business with a luxury look". أماكن الفيديو والتصوير والمعارض
+  تستخدم الإجابات داخل جملها مباشرة، لذلك لا نكررها هناك.
+*/
+function aboutPhrase(section, a1, a2, kind) {
+  if (!a1 || ['video', 'photo', 'expo'].includes(kind)) return '';
+  if (section === 'business') return `, for ${an(a1)} business${a2 ? ` with ${an(a2)} look` : ''}`;
+  if (section === 'identity') return `, personal brand of ${an(a1)} person${a2 ? ` working in ${a2}` : ''}`;
+  if (section === 'creator') return `, for ${an(a1)} content creator`;
+  if (section === 'photo') return `, inspired by ${a2 ? a2 + ' ' : ''}${a1} photography`;
+  if (section === 'expo') return `, for ${an(a1)} exhibition`;
+  if (section === 'beginner') return `, ${a1} colors`;
+  return '';
+}
+
 /* كلمات بحث Unsplash لكل مكان (للصور الملهمة) */
 function inspirationQuery(kind, ctx) {
+  const [a1 = '', a2 = ''] = (ctx.answers || []).map((x) => x.toLowerCase());
+  if (kind === 'video') return `${a1 || 'content creator'} video set`.trim();
+  if (kind === 'photo') return `${a2} ${a1 || 'lifestyle'} photography`.trim();
+  if (kind === 'expo') return `${a1} exhibition ${a2 || 'booth'}`.trim();
   const styleWord = { minimal: 'minimalist', luxury: 'luxury', bold: 'colorful', earthy: 'natural', retro: 'vintage' }[ctx.style] || '';
   const base = {
     room: ctx.space === 'facade' ? 'house facade' : (SPACE_WORDS[ctx.space] || 'living room') + ' interior',

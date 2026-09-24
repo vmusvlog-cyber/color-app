@@ -12,6 +12,9 @@ const AUDIENCES = [
   { id: 'business', styles: ['minimal', 'luxury', 'earthy', 'bold', 'retro'] },
   { id: 'creator', styles: ['bold', 'retro', 'minimal', 'earthy', 'luxury'] },
   { id: 'identity', styles: ['earthy', 'luxury', 'retro', 'minimal', 'bold'] },
+  { id: 'photo',    styles: ['earthy', 'retro', 'luxury', 'minimal', 'bold'] },
+  { id: 'expo',     styles: ['bold', 'minimal', 'luxury', 'earthy', 'retro'] },
+  { id: 'decor',    styles: ['earthy', 'minimal', 'luxury', 'retro', 'bold'] },
 ];
 
 /* الأساليب الخمسة */

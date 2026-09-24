@@ -1,8 +1,7 @@
 /* =========================================================================
-   describe.js — طريقة البدء "صِف فكرتك"
+   describe.js — أسئلة القسم، "عندي ألوان"، واللوحات الثلاث
    الشاشات:
-     #/describe/beginner   ← سؤال: مبتدئ أم عندك ألوان؟
-     #/quiz/beginner       ← الاستبيان (5 أسئلة)
+     #/quiz/beginner       ← أسئلة القسم (سؤال أو سؤالان من sections.js)
      #/mycolors/beginner   ← إدخال ألوانك
      #/options/beginner?.. ← 3 لوحات مقترحة
    ========================================================================= */
@@ -27,143 +26,91 @@ const FIELD_QUESTIONS = {
   other:     { who: ['kids', 'youth', 'women', 'men', 'families', 'professionals', 'everyone'], use: ['social', 'brand', 'web', 'print', 'slides'] },
 };
 
-/*
-  أسئلة الاستبيان (6) بالترتيب. تتغير حسب إجابة السؤال الأول (المجال).
-  type: 'text' = أزرار كلام، 'mood'/'style' = صور
-  title = مفتاح نص السؤال (إن لم يوجد نستخدم 'q.' + key)
-*/
-function quizSteps(answers) {
-  const field = FIELD_QUESTIONS[answers.industry] || FIELD_QUESTIONS.other;
-  const second = field.space
-    ? { key: 'space', type: 'text', options: field.space, label: 'space.' }
-    : { key: 'who', type: 'text', options: field.who, label: 'who.' };
-  return [
-    { key: 'industry', type: 'text', options: Object.keys(FIELD_QUESTIONS), label: 'ind.' },
-    second,
-    { key: 'use', type: 'text', options: field.use, label: 'use.', title: field.space ? 'q.use.home' : 'q.use' },
-    { key: 'feel', type: 'text', options: ['auto', ...feelingsFor(state.refine.temp)], label: 'refine.feel.' }, // بدون المشاعر المتعارضة مع حار/بارد
-    { key: 'mood', type: 'mood', options: Object.keys(MOODS), label: 'mood.' },
-    { key: 'style', type: 'style', options: STYLES, label: 'style.' },
-  ];
-}
-
 /* قائمة المجالات (يستخدمها المعرض أيضاً في فلتر "المجال") */
 const QUIZ = [{ key: 'industry', options: Object.keys(FIELD_QUESTIONS) }];
 
-/* ---------- سؤال البداية: مبتدئ أم عندك ألوان؟ ---------- */
-function renderDescribe(audience) {
-  app.innerHTML = `
-    ${backLink('#/methods/' + audience.id)}
-    <header class="page-head">
-      <h1>${t('describe.title')}</h1>
-      <p class="lead">${t('describe.subtitle')}</p>
-    </header>
-    <div class="method-grid two">
-      <a class="method-card big" href="#/quiz/${audience.id}">
-        <h2>${t('describe.beginner.title')}</h2>
-        <p>${t('describe.beginner.desc')}</p>
-      </a>
-      <a class="method-card big" href="#/mycolors/${audience.id}">
-        <h2>${t('describe.has.title')}</h2>
-        <p>${t('describe.has.desc')}</p>
-      </a>
-    </div>
-  `;
-}
-
-/* ---------- الاستبيان: سؤال واحد في كل مرة ---------- */
+/* ---------- أسئلة القسم: سؤال واحد في كل مرة (من sections.js) ---------- */
 function renderQuiz(audience, fresh) {
   if (fresh) state.quiz = { step: 0, answers: {} }; // نبدأ من جديد عند الدخول للشاشة
-  const steps = quizSteps(state.quiz.answers);
+  const id = audience.id;
+  const steps = SECTIONS[id] || SECTIONS.beginner;
   const q = steps[state.quiz.step];
   const total = steps.length;
   const chosen = state.quiz.answers[q.key];
 
-  // شكل كل خيار حسب نوع السؤال
-  const optionHtml = (opt) => {
-    const selected = chosen === opt ? 'selected' : '';
-    if (q.type === 'text') {
-      // سؤال الإحساس: نقطة ملوّنة بجانب كل إحساس، و"دعنا نختار لك" بدون نقطة
-      const dot = q.key === 'feel' && opt !== 'auto' ? feelingDot(opt) : '';
-      const label = q.key === 'feel' && opt === 'auto' ? t('feel.auto') : t(q.label + opt);
-      return `<button type="button" class="choice-chip ${selected}" data-value="${opt}">${dot}${label}</button>`;
-    }
-    const picture = q.type === 'mood' ? moodScene(opt) : styleScene(opt);
-    const desc = q.type === 'style' ? `<small>${t('style.' + opt + '.desc')}</small>` : '';
-    return `
-      <button type="button" class="choice-image ${selected}" data-value="${opt}">
-        <span class="choice-pic">${picture}</span>
-        <span class="choice-label">${t(q.label + opt)}${desc}</span>
-      </button>`;
-  };
-
   app.innerHTML = `
-    ${backLink('#/describe/' + audience.id)}
+    ${backLink('#/')}
     <div class="quiz">
-      <p class="eyebrow">${t('quiz.step', { n: state.quiz.step + 1, total })}</p>
-      <div class="progress"><span style="width:${((state.quiz.step + 1) / total) * 100}%"></span></div>
-      <h1>${t(q.title || 'q.' + q.key)}</h1>
-      <div class="${q.type === 'text' ? 'choice-chips' : 'choice-images'}">
-        ${q.options.map(optionHtml).join('')}
+      <p class="eyebrow">${t('aud.' + id + '.title')}${total > 1 ? ' · ' + t('quiz.step', { n: state.quiz.step + 1, total }) : ''}</p>
+      ${total > 1 ? `<div class="progress"><span style="width:${((state.quiz.step + 1) / total) * 100}%"></span></div>` : ''}
+      <h1>${sectionQuestionTitle(id, q)}</h1>
+      <div class="choice-chips">
+        ${Object.keys(q.options).map((opt) => `
+          <button type="button" class="choice-chip ${chosen === opt ? 'selected' : ''}" data-value="${opt}">${sectionOptionLabel(id, q, opt)}</button>`).join('')}
       </div>
       ${state.quiz.step > 0 ? `<button type="button" class="btn btn-small" id="quiz-prev"><span class="back-arrow" aria-hidden="true">←</span> ${t('quiz.prev')}</button>` : ''}
     </div>
+
+    <!-- طرق أخرى لمن يريدها (روابط صغيرة) -->
+    <p class="other-ways">
+      <span>${t('quiz.otherWays')}</span>
+      <a href="#/mycolors/${id}">${t('describe.has.title')}</a>
+      <a href="#/ready/${id}">${t('method.ready.title')}</a>
+      <a href="#/free/${id}">${t('method.free.title')}</a>
+    </p>
   `;
 
   // الضغط على خيار: نحفظ الإجابة وننتقل مباشرة للسؤال التالي
   app.querySelectorAll('[data-value]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      // إذا غيّر المستخدم المجال، نمسح إجابات السؤالين التاليين لأن خياراتهما تتغير
-      if (q.key === 'industry' && state.quiz.answers.industry !== btn.dataset.value) {
-        delete state.quiz.answers.who;
-        delete state.quiz.answers.space;
-        delete state.quiz.answers.use;
-      }
-      state.quiz.answers[q.key] = btn.dataset.value;
+      const value = btn.dataset.value;
+      // "لون واحد ← 3 ألوان": نفتح شاشة "عندي ألوان"
+      if (q.options[value].go === 'mycolors') { location.hash = '#/mycolors/' + id; return; }
+      state.quiz.answers[q.key] = value;
       if (state.quiz.step < total - 1) {
         state.quiz.step++;
         renderQuiz(audience);
         window.scrollTo(0, 0);
       } else {
-        // انتهت الأسئلة ← نذهب لشاشة اللوحات الثلاث ومعنا الإجابات في الرابط
-        const a = state.quiz.answers;
-        // إجابة الإحساس تصبح أول اختيار في لوحة "دقّق النتيجة" (ويمكن تغييرها هناك)
-        state.refine = { ...defaultRefine(), temp: state.refine.temp, feel: a.feel === 'auto' ? '' : a.feel };
-        state.previewKind = null; // المعاينة تُختار تلقائياً حسب الإجابات الجديدة
-        const place = a.space ? '&space=' + a.space : '&who=' + a.who;
-        location.hash = `#/options/${audience.id}?mode=quiz&ind=${a.industry}${place}&use=${a.use}&mood=${a.mood}&s=${a.style}`;
+        finishQuiz(id, steps, state.quiz.answers);
       }
     });
   });
 
   const prev = document.getElementById('quiz-prev');
   if (prev) prev.addEventListener('click', () => { state.quiz.step--; renderQuiz(audience); });
-
-  // صور حقيقية بدل الرسومات في سؤالي المزاج والأسلوب (إن وُجد مفتاح Unsplash)
-  if ((q.type === 'mood' || q.type === 'style') && unsplashEnabled()) loadQuizPhotos(q);
 }
 
-/* يستبدل رسمة كل خيار بصورة حقيقية، ويكتب اسم المصوّر تحتها */
-function loadQuizPhotos(q) {
-  const queries = q.type === 'mood' ? MOOD_PHOTO_QUERY : STYLE_PHOTO_QUERY;
-  app.querySelectorAll('.choice-image').forEach((btn) => {
-    const opt = btn.dataset.value;
-    unsplashPhotos(queries[opt], '', 1)
-      .then((photos) => {
-        const photo = photos[0];
-        if (!photo || !document.body.contains(btn)) return;
-        btn.querySelector('.choice-pic').innerHTML = `<img src="${photo.thumb}" alt="${escapeHtml(photo.alt)}">`;
-        btn.querySelector('.choice-label').insertAdjacentHTML('beforeend',
-          `<small class="photo-credit">${escapeHtml(photo.author)} · Unsplash</small>`);
-      })
-      .catch(() => { /* نبقي الرسمة إن فشل التحميل */ });
-  });
+/* انتهت الأسئلة ← نحوّل الإجابات إلى ألوان ونذهب لشاشة اللوحات الثلاث */
+function finishQuiz(id, steps, answers) {
+  const p = sectionProfile(id, answers);
+  // حار/بارد: من الإجابة إن وُجد، وإلا يبقى زر الشريط العلوي كما هو
+  const temp = p.temp || state.refine.temp;
+  // الإحساس لا يتعارض مع حار/بارد (مثلاً "دافئ" مع "بارد")
+  const feel = p.feel && feelingsFor(temp).includes(p.feel) ? p.feel : '';
+  // هذه الإجابات تصبح أول اختيار في لوحة "دقّق النتيجة" (ويمكن تغييرها هناك)
+  state.refine = { ...defaultRefine(), temp, feel, contrast: p.contrast || '', value: p.value || '' };
+  state.previewKind = null; // المعاينة تُختار تلقائياً حسب الإجابات الجديدة
+
+  // q1 و q2 = إجابتا السؤالين (للبرومبت)، والباقي لصنع الألوان
+  const query = new URLSearchParams({ mode: 'sec' });
+  steps.forEach((q, i) => query.set('q' + (i + 1), answers[q.key]));
+  ['ind', 'space', 'use', 'mood', 'pv'].forEach((k) => { if (p[k]) query.set(k, p[k]); });
+  query.set('s', p.style);
+  location.hash = `#/options/${id}?${query.toString()}`;
+}
+
+/* إجابات القسم من الرابط: { kind: 'warm' } أو { type: 'cafe', style: 'luxury' } */
+function sectionAnswersFromParams(id, params) {
+  const out = {};
+  (SECTIONS[id] || []).forEach((q, i) => { if (params['q' + (i + 1)]) out[q.key] = params['q' + (i + 1)]; });
+  return out;
 }
 
 /* ---------- عندي ألوان: اكتب اسماً أو كوداً، أو اختر من العجلة ---------- */
 function renderMyColors(audience) {
   app.innerHTML = `
-    ${backLink('#/describe/' + audience.id)}
+    ${backLink('#/quiz/' + audience.id)}
     <header class="page-head">
       <h1>${t('mycolors.title')}</h1>
       <p class="lead">${t('mycolors.subtitle')}</p>
@@ -275,11 +222,11 @@ function renderOptions(audience, params) {
 
   // المعلومات التي ننقلها لشاشة النتيجة (المجال والأسلوب)
   // المعلومات التي ننقلها لشاشة النتيجة (المجال، الأسلوب، ومكان الاستخدام لاختيار المعاينة)
-  const extra = ['ind', 's', 'use', 'space']
+  const extra = ['ind', 's', 'use', 'space', 'q1', 'q2', 'pv']
     .filter((k) => params[k])
     .map((k) => '&' + k + '=' + params[k])
     .join('');
-  let backHref = '#/describe/' + audience.id;
+  let backHref = '#/quiz/' + audience.id;
   if (params.mode === 'colors') backHref = '#/mycolors/' + audience.id;
   if (params.mode === 'image') backHref = '#/upload/' + audience.id;
 
@@ -351,7 +298,7 @@ function makeOptions(params) {
 
   // نطبّق باقي اختيارات "دقّق" على كل لوحة
   const skipFeeling = params.mode !== 'image' && params.mode !== 'colors'; // في الاستبيان استُخدم الإحساس أصلاً
-  const style = params.mode === 'quiz' || !params.mode ? params.s : null;   // الخلفية الداكنة للفاخر فقط
+  const style = params.mode === 'sec' || !params.mode ? params.s : null;   // الخلفية الداكنة للفاخر فقط
   return list.map((opt) => {
     let colors = applyRefine(opt.colors, refine, locked, { skipFeeling, style });
     // عدد الألوان الذي اختاره المستخدم (ألوانه الخاصة تبقى دائماً)

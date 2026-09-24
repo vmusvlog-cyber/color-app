@@ -2,7 +2,7 @@
    app.js — الشاشات والتنقل بينها
    التطبيق صفحة واحدة. نعرف الشاشة المطلوبة من الجزء بعد # في الرابط:
      #/                         ← الرئيسية
-     #/methods/beginner         ← طرق البدء لقسم "مبتدئ"
+     #/quiz/beginner            ← أسئلة قسم "مبتدئ" (من sections.js)
      #/ready/beginner           ← اللوحات الجاهزة
      #/free/beginner            ← الاختيار الحر
      #/result/beginner?c=...    ← شاشة النتيجة (الألوان داخل الرابط، لذلك يمكن مشاركته)
@@ -185,15 +185,11 @@ function renderHome() {
         <span class="btn btn-primary upload-go">${t('home.upload.go')}</span>
       </a>
       ${AUDIENCES.map((a) => `
-        <a class="audience-card card-${a.id}" href="#/methods/${a.id}">
+        <a class="audience-card card-${a.id}" href="#/quiz/${a.id}">
           <h2>${t('aud.' + a.id + '.title')}</h2>
           <p>${t('aud.' + a.id + '.desc')}</p>
         </a>
       `).join('')}
-      <a class="audience-card card-gallery" href="#/gallery">
-        <h2>${t('home.gallery.title')}</h2>
-        <p>${t('home.gallery.desc')}</p>
-      </a>
     </div>
   `;
 }
@@ -201,40 +197,6 @@ function renderHome() {
 /* ألوان الواجهة الأولى (اختارها صاحب التطبيق):
    أصفر، كريمي، برتقالي، أحمر، أخضر غامق، كيوي */
 const HOME_COLORS = ['#FFC926', '#F3E8CC', '#F96015', '#D52518', '#18542A', '#9ABC05'];
-
-/* =========================================================================
-   الشاشة 2: طرق البدء الأربع
-   ========================================================================= */
-function renderMethods(audience) {
-  const methods = [
-    { id: 'describe', soon: false },
-    { id: 'ready',    soon: false },
-    { id: 'free',     soon: false },
-  ];
-
-  app.innerHTML = `
-    ${backLink('#/')}
-    <header class="page-head">
-      <p class="eyebrow">${t('methods.subtitle', { audience: t('aud.' + audience.id + '.title') })}</p>
-      <h1>${t('methods.title')}</h1>
-      <p class="tip">${t('aud.' + audience.id + '.tip')}</p>
-    </header>
-
-    <div class="method-grid">
-      ${methods.map((m) => m.soon
-        ? `<div class="method-card is-soon" aria-disabled="true">
-             <h2>${t('method.' + m.id + '.title')}</h2>
-             <p>${t('method.' + m.id + '.desc')}</p>
-             <span class="badge">${t('common.soon')}</span>
-           </div>`
-        : `<a class="method-card" href="#/${m.id}/${audience.id}">
-             <h2>${t('method.' + m.id + '.title')}</h2>
-             <p>${t('method.' + m.id + '.desc')}</p>
-           </a>`
-      ).join('')}
-    </div>
-  `;
-}
 
 /* =========================================================================
    الشاشة 3: اللوحات الجاهزة
@@ -253,7 +215,7 @@ function renderReady(audience) {
     .map((p) => ({ ...p, colors: applyRefine(p.colors, state.refine, [], { style: p.style }) }));
 
   app.innerHTML = `
-    ${backLink('#/methods/' + audience.id)}
+    ${backLink('#/quiz/' + audience.id)}
     <header class="page-head">
       <h1>${t('ready.title')}</h1>
       <p class="lead">${t('ready.subtitle')}</p>
@@ -314,7 +276,7 @@ function renderFree(audience, params) {
   const miniPalettes = READY_PALETTES.filter((p) => audience.styles.slice(0, 2).includes(p.style));
 
   app.innerHTML = `
-    ${backLink('#/methods/' + audience.id)}
+    ${backLink('#/quiz/' + audience.id)}
     <header class="page-head">
       <h1>${t('free.title')}</h1>
       <p class="lead">${t('free.hint')}</p>
@@ -526,11 +488,11 @@ function render(keepScroll) {
   const known = ['methods','ready','free','result','describe','quiz','mycolors','options','upload','saved','gallery'];
   document.body.classList.toggle('home-page', !known.includes(screen));
 
-  if (screen === 'methods') renderMethods(audience);
+  // الشاشتان القديمتان (طرق البدء، مبتدئ أم عندك ألوان) صارتا أسئلة القسم مباشرة
+  if (screen === 'methods' || screen === 'describe') renderQuiz(audience, true);
   else if (screen === 'ready') renderReady(audience);
   else if (screen === 'free') renderFree(audience, params);
   else if (screen === 'result') renderResult(audience, params);
-  else if (screen === 'describe') renderDescribe(audience);
   else if (screen === 'quiz') renderQuiz(audience, !keepScroll); // تبديل اللغة لا يعيد الاستبيان من البداية
   else if (screen === 'mycolors') renderMyColors(audience);
   else if (screen === 'options') renderOptions(audience, params);
