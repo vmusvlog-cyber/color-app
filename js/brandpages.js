@@ -283,7 +283,7 @@ function pageColors(ctx, k) {
     const tx = k.ar ? sx - 40 : sx + sw + 40;
     const al = sideAlign(k);
     const rgb = hexToRgb(c), cm = toCmyk(c);
-    drawText(ctx, `${roleName(i, c)} · ${colorName(c)}`, tx, y + 40, { size: 32, font: k.head, weight: 700, color: k.dark, align: al });
+    drawText(ctx, `${brandRole(i)} ${k.ar ? '٪' + brandShare(i, n) : brandShare(i, n) + '%'} · ${colorName(c)}`, tx, y + 40, { size: 32, font: k.head, weight: 700, color: k.dark, align: al });
     drawText(ctx, `HEX ${c}   RGB ${rgb.r} ${rgb.g} ${rgb.b}   CMYK ${cm.c} ${cm.m} ${cm.y} ${cm.k}`, tx, y + 88, { size: 22, font: k.enBody, color: '#3A3A3C', align: al });
     drawText(ctx, t('brand.use.' + Math.min(i, 4)), tx, y + 134, { size: 23, font: k.body, color: '#6B6B70', align: al, maxW: PAGE_W - 2 * PAGE_M - sw - 40, lineH: 32, maxLines: 2 });
   });

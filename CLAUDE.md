@@ -162,7 +162,12 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       Questions (owner's answers): 12, multi-select questions have NO limit (then "Next"); single:
       who, price, count. Love/avoid = 16 color circles, each with "Swap" (slides up, new color
       comes in); loved colors always appear, avoided families never do. After picking a palette,
-      a review screen lets you Swap any color the same way. "Color look" (solid / 2-color
+      a review screen ("Your palette") shows each color's ROLE and SHARE by position (background,
+      primary, secondary, text & details, support; e.g. 45/25/15/10/5% — shown here and on the
+      PDF colors page even though percentages were removed elsewhere, by owner request), a share
+      bar, drag-to-reorder by the ⋮⋮ grip (auto-scrolls on phones), and per-color history:
+      "Swap" (brandSwapColor keeps the light/dark/colored type but is always clearly different —
+      fixes black→black) and ← to go back. "Color look" (solid / 2-color
       gradient / 3-color gradient / transparent shapes) is drawn on the cover, posts, story,
       highlights, Facebook cover, TikTok cover and website, and added to the prompts.
 - [ ] Phase 6

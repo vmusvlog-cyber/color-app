@@ -1312,3 +1312,23 @@ html[dir="rtl"] .page-head h1::after, html[dir="rtl"] .section-title::after { tr
   .review-col { grid-template-columns: 1fr auto; align-items: center; }
   .review-swatch { min-height: 76px; }
 }
+
+/* "لوحتك": شريط النسب، المقبض للسحب، والرجوع/التبديل */
+.share-bar { display: flex; height: 34px; border-radius: 10px; overflow: hidden; margin: 12px 0 16px; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); }
+.share-bar i { display: flex; align-items: center; justify-content: center; min-width: 26px; }
+.share-bar small { font-size: .72rem; font-weight: 700; }
+.review-swatch { position: relative; }
+.review-role { font-size: .85rem; font-weight: 700; opacity: .9; }
+.review-role b { font-size: 1.05rem; margin-inline-start: 4px; }
+.drag-grip {
+  position: absolute; top: 8px; inset-inline-end: 10px; padding: 4px 8px; border-radius: 8px;
+  font-weight: 900; letter-spacing: -2px; cursor: grab; touch-action: none; user-select: none;
+  background: rgba(255,255,255,.25);
+}
+.review-col.is-dragging { opacity: .6; transform: scale(.97); }
+.review-nav { display: flex; align-items: center; justify-content: center; gap: 6px; }
+@media (max-width: 700px) {
+  .review-col { grid-template-columns: 1fr; }
+  .review-swatch { min-height: 96px; padding-inline-end: 56px; }
+  .review-nav { justify-content: flex-end; }
+}

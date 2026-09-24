@@ -202,6 +202,7 @@ function renderBrandOptions() {
   `;
   body.querySelectorAll('[data-pick]').forEach((btn) => btn.addEventListener('click', () => {
     b.colors = [...b.options[Number(btn.dataset.pick)]];
+    b.hist = null; // سجل "بدّل" يبدأ من جديد مع اللوحة الجديدة
     if (b.fromPhoto) b.style = detectStyle(b.colors);
     b.review = true;
     renderBrand();
@@ -217,45 +218,126 @@ function renderBrandOptions() {
   });
 }
 
-/* مراجعة اللوحة: كل لون له "بدّل" (ينزلق للأعلى ويأتي لون آخر) */
+/*
+  مراجعة اللوحة (حرية كاملة):
+  - مكان اللون = دوره ونسبته (الخلفية 45%، الرئيسي 25%...)
+  - اسحب اللون من المقبض لتغيّر مكانه (أعلى/أسفل على الجوال، يمين/يسار على الشاشة الكبيرة)
+  - "بدّل" يأتي بلون جديد (ينزلق للأعلى)، و"←" يرجع للون السابق (لكل لون سجلّه)
+*/
 function renderBrandReview() {
   const b = state.brand;
+  const n = b.colors.length;
+  if (!b.hist || b.hist.length !== n) b.hist = b.colors.map((c) => ({ list: [c], pos: 0 }));
   const avoid = (b.answers.avoid || []).map(colorFamily);
   const body = document.getElementById('brand-body');
-  const col = (c, i) => `
-    <div class="review-col">
-      <div class="review-swatch" style="background:${c}; color:${isLight(c) ? '#1a1a1a' : '#fff'}">
-        <span class="strip-role">${roleName(i, c)}</span>
-        <strong>${colorName(c)}</strong>
-        <code dir="ltr">${c}</code>
-      </div>
-      <button type="button" class="btn btn-small swatch-skip" data-swap="${i}">${t('bq.skip')}</button>
-    </div>`;
+
+  const row = (c, i) => {
+    const h = b.hist[i];
+    const ink = isLight(c) ? '#1a1a1a' : '#fff';
+    return `
+      <div class="review-col" data-row="${i}">
+        <div class="review-swatch" style="background:${c}; color:${ink}">
+          <span class="drag-grip" data-grip="${i}" title="${t('bq.drag')}" aria-label="${t('bq.drag')}">⋮⋮</span>
+          <span class="review-role">${brandRole(i)} <b dir="ltr">${brandShare(i, n)}%</b></span>
+          <strong>${colorName(c)}</strong>
+          <code dir="ltr">${c}</code>
+        </div>
+        <div class="review-nav">
+          <button type="button" class="regen-arrow" data-back="${i}" ${h.pos === 0 ? 'disabled' : ''} aria-label="${t('bq.undo')}" title="${t('bq.undo')}">
+            <span class="back-arrow" aria-hidden="true">←</span></button>
+          <span class="regen-count" dir="ltr" ${h.list.length > 1 ? '' : 'style="visibility:hidden"'}>${h.pos + 1}/${h.list.length}</span>
+          <button type="button" class="btn btn-small swatch-skip" data-swap="${i}">${t('bq.skip')}</button>
+        </div>
+      </div>`;
+  };
+
   body.innerHTML = `
     <h2 class="section-title">${t('bq.review')}</h2>
     <p class="small-hint">${t('bq.reviewHint')}</p>
-    <div class="review-strip">${b.colors.map(col).join('')}</div>
+    <!-- شريط النسب: عرض كل لون = نسبته -->
+    <div class="share-bar" aria-hidden="true">
+      ${b.colors.map((c, i) => `<i style="background:${c}; flex:${brandShare(i, n)}"><small dir="ltr" style="color:${isLight(c) ? '#1a1a1a' : '#fff'}">${brandShare(i, n)}%</small></i>`).join('')}
+    </div>
+    <div class="review-strip" id="review-strip">${b.colors.map(row).join('')}</div>
     <div class="actions"><button type="button" class="btn btn-primary" id="brand-next">${t('brand.next')}</button></div>
   `;
+
+  // "بدّل": لون جديد يُضاف لسجل هذا المكان (ويمكن الرجوع إليه بـ ←)
   body.querySelectorAll('[data-swap]').forEach((btn) => btn.addEventListener('click', () => {
     const i = Number(btn.dataset.swap);
-    let fresh = regenerateColor(b.colors, i);
-    fresh = avoidFamilies(fresh, avoid);
+    const fresh = brandSwapColor(b.colors, i, avoid);
+    const h = b.hist[i];
+    h.list = [...h.list.slice(0, h.pos + 1), fresh];
+    h.pos = h.list.length - 1;
     const sw = btn.closest('.review-col').querySelector('.review-swatch');
-    slideSwap(sw, () => {
-      b.colors[i] = fresh;
-      sw.style.background = fresh;
-      sw.style.color = isLight(fresh) ? '#1a1a1a' : '#fff';
-      sw.querySelector('strong').textContent = colorName(fresh);
-      sw.querySelector('code').textContent = fresh;
-      sw.querySelector('.strip-role').textContent = roleName(i, fresh);
-    });
+    slideSwap(sw, () => { b.colors[i] = fresh; renderBrandReview(); slideInRow(i); });
   }));
+  // "←": الرجوع للون السابق في نفس المكان
+  body.querySelectorAll('[data-back]').forEach((btn) => btn.addEventListener('click', () => {
+    const i = Number(btn.dataset.back);
+    const h = b.hist[i];
+    if (h.pos === 0) return;
+    h.pos--;
+    const sw = btn.closest('.review-col').querySelector('.review-swatch');
+    slideSwap(sw, () => { b.colors[i] = h.list[h.pos]; renderBrandReview(); slideInRow(i); });
+  }));
+
+  enableReviewDrag();
+
   document.getElementById('brand-next').addEventListener('click', () => {
     b.fontIndex = 0;
     b.step = 'font';
     renderBrand();
     window.scrollTo(0, 0);
+  });
+}
+
+/* بعد إعادة الرسم: اللون الجديد يصعد من الأسفل */
+function slideInRow(i) {
+  const el = document.querySelector(`[data-row="${i}"] .review-swatch`);
+  if (!el) return;
+  el.classList.add('swap-in');
+  requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('swap-in')));
+}
+
+/*
+  سحب لتغيير الترتيب: نمسك المقبض (⋮⋮) ونحرّك.
+  كلما مر الإصبع فوق لون آخر، نبدّل مكانهما مباشرة، وعند الإفلات نحفظ الترتيب الجديد
+  (الألوان وسجلّاتها معاً)، فتتغير الأدوار والنسب تلقائياً.
+*/
+function enableReviewDrag() {
+  const b = state.brand;
+  const strip = document.getElementById('review-strip');
+  strip.querySelectorAll('[data-grip]').forEach((grip) => {
+    grip.addEventListener('pointerdown', (e) => {
+      e.preventDefault();
+      const dragged = grip.closest('.review-col');
+      dragged.classList.add('is-dragging');
+      strip.setPointerCapture(e.pointerId); // الشريط نفسه لا يتحرك، فيبقى يستقبل الحركة
+      const onMove = (ev) => {
+        // قرب حافة الشاشة: ننزل أو نطلع الصفحة تلقائياً (مهم على الجوال)
+        if (ev.clientY > window.innerHeight - 70) window.scrollBy(0, 14);
+        else if (ev.clientY < 70) window.scrollBy(0, -14);
+        const under = document.elementFromPoint(ev.clientX, ev.clientY);
+        const target = under && under.closest('.review-col');
+        if (!target || target === dragged || !strip.contains(target)) return;
+        const cols = [...strip.children];
+        const from = cols.indexOf(dragged), to = cols.indexOf(target);
+        strip.insertBefore(dragged, from < to ? target.nextSibling : target);
+      };
+      const onUp = () => {
+        strip.removeEventListener('pointermove', onMove);
+        strip.removeEventListener('pointerup', onUp);
+        strip.removeEventListener('pointercancel', onUp);
+        const order = [...strip.children].map((el) => Number(el.dataset.row));
+        b.colors = order.map((i) => b.colors[i]);
+        b.hist = order.map((i) => b.hist[i]);
+        renderBrandReview();
+      };
+      strip.addEventListener('pointermove', onMove);
+      strip.addEventListener('pointerup', onUp);
+      strip.addEventListener('pointercancel', onUp);
+    });
   });
 }
 

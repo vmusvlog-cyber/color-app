@@ -174,3 +174,49 @@ function slideSwap(el, setColor) {
     requestAnimationFrame(() => requestAnimationFrame(() => el.classList.remove('swap-in')));
   }, 220);
 }
+
+/* ---------- أدوار الألوان ونسبها (شاشة "لوحتك" وصفحة الألوان في الدليل) ---------- */
+
+/* مكان اللون يحدد دوره: 0 الخلفية، 1 الرئيسي، 2 الثانوي، 3 النصوص والتفاصيل، 4 و5 مساعد */
+function brandRole(i) {
+  return t('bq.role.' + Math.min(i, 4));
+}
+
+/* النسبة المئوية لكل مكان حسب عدد الألوان (مجموعها 100) */
+const BRAND_SHARES = {
+  1: [100], 2: [70, 30], 3: [60, 30, 10], 4: [50, 30, 12, 8],
+  5: [45, 25, 15, 10, 5], 6: [40, 25, 13, 10, 7, 5],
+};
+function brandShare(i, n) {
+  return (BRAND_SHARES[n] || BRAND_SHARES[6])[i] || 5;
+}
+
+/*
+  لون بديل لزر "بدّل": من نفس "نوع" اللون الحالي (فاتح، داكن، أو ملوّن)
+  لكنه مختلف فعلاً عنه وعن باقي ألوان اللوحة (هذا يحل مشكلة: أسود ← أسود ← أسود).
+*/
+function brandSwapColor(colors, i, avoid = []) {
+  const cur = hexToHsl(colors[i]);
+  const main = hexToHsl(colors[1] || colors[0]);
+  const make = () => {
+    const h = Math.random() < 0.5 ? main.h + rand(-60, 60) : rand(0, 360);
+    if (cur.l >= 88) return hslToHex(h, rand(15, 45), rand(91, 97));   // فاتح (خلفية)
+    if (cur.l <= 28) return hslToHex(h, rand(25, 60), rand(14, 26));   // داكن (نصوص)
+    if (cur.s < 25) return hslToHex(h, rand(8, 22), rand(40, 75));     // محايد
+    return hslToHex(h, rand(50, 85), rand(38, 62));                    // ملوّن
+  };
+  // مسافة بسيطة بين لونين (كلما كبرت كان الفرق أوضح للعين)
+  const dist = (a, b) => {
+    const x = hexToRgb(a), y = hexToRgb(b);
+    return Math.hypot(x.r - y.r, x.g - y.g, x.b - y.b);
+  };
+  let best = null, bestD = -1;
+  for (let k = 0; k < 40; k++) {
+    const c = make();
+    if (avoid.includes(colorFamily(c))) continue;
+    const d = Math.min(...colors.map((o) => dist(o, c)));
+    if (d > 70) return c;                 // مختلف بما يكفي
+    if (d > bestD) { bestD = d; best = c; }
+  }
+  return best || randomNiceColor();
+}
