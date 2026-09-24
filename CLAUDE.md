@@ -109,6 +109,13 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       gives an Unsplash key; quiz mood/style photos also need that key).
       Part C — the owner's 10 marketing techniques: a "Technique" row in the Refine panel; each
       uses its ORIGINAL colors; short explanation + "More" for details; added to the prompts.
+- [x] Extra (owner's 10 answers): home screen ONLY got new colors (every other screen stays
+      white and calm so users focus on their palette). Cream #F3E8CC background, cream top bar
+      with forest-green outlined buttons, rounded fonts (Baloo Bhaijaan 2 / Fredoka), title words
+      each in a different color (not yellow/cream, unreadable on cream), 6-color strip, cards
+      without icons in a bento layout of different sizes: beginner #FFC926, business #18542A,
+      creator #F96015, identity #D52518, plus a small kiwi #9ABC05 card that opens the gallery.
+      Hover scales the card. Styles are scoped under `body.home-page` (set in render()).
 - [ ] Phase 6
 
 ---

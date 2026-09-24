@@ -955,3 +955,105 @@ body.no-scroll { overflow: hidden; }
   .my-palette .actions { margin-top: 10px; gap: 6px; }
   .my-palette .actions .btn { padding: 7px 12px; font-size: .88rem; }
 }
+
+/* =========================================================================
+   الواجهة الأولى فقط (اختيارات صاحب التطبيق):
+   خلفية كريمي، بطاقات ملوّنة بأحجام مختلفة، خط دائري، شريط علوي كريمي.
+   كل شيء هنا يبدأ بـ body.home-page حتى لا يغيّر باقي الشاشات.
+   ========================================================================= */
+body.home-page {
+  --home-cream: #F3E8CC;
+  --home-yellow: #FFC926;
+  --home-orange: #F96015;
+  --home-red: #D52518;
+  --home-green: #18542A;
+  --home-kiwi: #9ABC05;
+  --home-font: 'Baloo Bhaijaan 2', 'Fredoka', 'Tajawal', system-ui, sans-serif;
+  background: var(--home-cream);
+  color: var(--home-green);
+}
+html[lang="en"] body.home-page { --home-font: 'Fredoka', 'Baloo Bhaijaan 2', 'Inter', system-ui, sans-serif; }
+body.home-page, body.home-page button { font-family: var(--home-font); }
+
+/* الشريط العلوي: كريمي، والأزرار بإطار أخضر غامق */
+body.home-page .brand { color: var(--home-green); }
+body.home-page .brand-dots i { border-color: var(--home-cream); }
+body.home-page .brand-dots i:nth-child(1) { background: var(--home-red); }
+body.home-page .brand-dots i:nth-child(2) { background: var(--home-yellow); }
+body.home-page .brand-dots i:nth-child(3) { background: var(--home-green); }
+body.home-page .lang-btn,
+body.home-page .temp-switch {
+  background: transparent;
+  border: 2px solid var(--home-green);
+  color: var(--home-green);
+}
+body.home-page .lang-btn:hover { background: rgba(24, 84, 42, .08); }
+body.home-page .temp-switch button.on,
+body.home-page .count { background: var(--home-green); color: var(--home-cream); }
+
+/* العنوان: كل كلمة بلون (الألوان من app.js) */
+body.home-page .hero h1 { font-size: clamp(2rem, 5.5vw, 3.4rem); font-weight: 700; letter-spacing: -.01em; }
+body.home-page .hero .lead { color: var(--home-green); opacity: .85; font-size: 1.12rem; }
+body.home-page .hero-strip { box-shadow: none; }
+body.home-page .hero-strip i { width: 36px; }
+/* المربع الكريمي في الشريط يحتاج إطاراً خفيفاً حتى يظهر على الخلفية الكريمي */
+body.home-page .hero-strip i:nth-child(2) { box-shadow: inset 0 0 0 2px rgba(24, 84, 42, .15); }
+
+/* البطاقات بأحجام مختلفة، مثل لوحة الألوان في الصورة:
+     مبتدئ (أصفر)  | أصحاب أعمال (أخضر) | صنّاع محتوى (برتقالي)
+     هوية (أحمر)   |                    | المعرض (كيوي، صغيرة)      */
+body.home-page .audience-grid {
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-areas:
+    "beginner business creator"
+    "beginner business creator"
+    "identity business creator"
+    "identity business gallery";
+  grid-auto-rows: minmax(96px, auto);
+  gap: 14px;
+}
+body.home-page .audience-card {
+  border: 0;
+  border-radius: 22px;
+  padding: 26px 24px;
+  gap: 6px;
+  justify-content: flex-end;
+  transition: transform .2s ease;
+}
+/* عند وضع الإصبع أو الماوس: تكبر البطاقة قليلاً */
+body.home-page .audience-card:hover { transform: scale(1.03); box-shadow: none; }
+body.home-page .audience-card h2 { font-size: clamp(1.4rem, 2.6vw, 2rem); font-weight: 700; line-height: 1.15; }
+body.home-page .audience-card p { font-size: 1.02rem; font-weight: 500; opacity: .95; }
+
+/* لون كل بطاقة ولون كتابتها */
+.home-page .card-beginner { grid-area: beginner; background: var(--home-yellow); color: var(--home-red); }
+.home-page .card-beginner p { color: var(--home-green); }
+.home-page .card-business { grid-area: business; background: var(--home-green); color: var(--home-yellow); }
+.home-page .card-business p { color: var(--home-cream); }
+.home-page .card-creator  { grid-area: creator;  background: var(--home-orange); color: var(--home-yellow); }
+.home-page .card-creator p { color: #FFF6E0; }
+.home-page .card-identity { grid-area: identity; background: var(--home-red); color: var(--home-yellow); }
+.home-page .card-identity p { color: var(--home-cream); }
+.home-page .card-gallery  { grid-area: gallery;  background: var(--home-kiwi); color: var(--home-green); padding: 18px 24px; }
+.home-page .card-gallery p { color: var(--home-green); }
+
+/* آيباد عمودي: عمودان */
+@media (max-width: 900px) {
+  body.home-page .audience-grid {
+    grid-template-columns: repeat(2, 1fr);
+    grid-template-areas:
+      "beginner business"
+      "beginner business"
+      "identity creator"
+      "identity gallery";
+  }
+}
+/* الجوال: البطاقات تحت بعضها */
+@media (max-width: 560px) {
+  body.home-page .audience-grid { grid-template-columns: 1fr; grid-template-areas: none; grid-auto-rows: auto; }
+  body.home-page .audience-card { grid-area: auto; min-height: 120px; padding: 20px; }
+  body.home-page .card-gallery { min-height: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.home-page .audience-card:hover { transform: none; }
+}

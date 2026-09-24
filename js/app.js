@@ -155,27 +155,39 @@ function applyLanguage() {
    الشاشة 1: الرئيسية — أربع بطاقات
    ========================================================================= */
 function renderHome() {
+  // كل كلمة في العنوان بلون (بدون الأصفر والكريمي لأنهما لا يظهران على الخلفية الكريمي)
+  const wordColors = ['#D52518', '#18542A', '#F96015', '#9ABC05'];
+  const title = t('home.title').split(' ')
+    .map((w, i) => `<span style="color:${wordColors[i % wordColors.length]}">${w}</span>`).join(' ');
+
   app.innerHTML = `
     <section class="hero">
       <div class="hero-strip" aria-hidden="true">
-        <i style="background:#E07A5F"></i><i style="background:#F2CC8F"></i>
-        <i style="background:#81B29A"></i><i style="background:#3D405B"></i>
+        ${HOME_COLORS.map((c) => `<i style="background:${c}"></i>`).join('')}
       </div>
-      <h1>${t('home.title')}</h1>
+      <h1>${title}</h1>
       <p class="lead">${t('home.subtitle')}</p>
     </section>
 
+    <!-- بطاقات بأحجام مختلفة (مثل لوحة الألوان في صورة صاحب التطبيق). الكتابة فقط، بدون أيقونات -->
     <div class="audience-grid">
       ${AUDIENCES.map((a) => `
-        <a class="audience-card" href="#/methods/${a.id}">
-          <span class="audience-icon" aria-hidden="true">${a.icon}</span>
+        <a class="audience-card card-${a.id}" href="#/methods/${a.id}">
           <h2>${t('aud.' + a.id + '.title')}</h2>
           <p>${t('aud.' + a.id + '.desc')}</p>
         </a>
       `).join('')}
+      <a class="audience-card card-gallery" href="#/gallery">
+        <h2>${t('home.gallery.title')}</h2>
+        <p>${t('home.gallery.desc')}</p>
+      </a>
     </div>
   `;
 }
+
+/* ألوان الواجهة الأولى (اختارها صاحب التطبيق):
+   أصفر، كريمي، برتقالي، أحمر، أخضر غامق، كيوي */
+const HOME_COLORS = ['#FFC926', '#F3E8CC', '#F96015', '#D52518', '#18542A', '#9ABC05'];
 
 /* =========================================================================
    الشاشة 2: طرق البدء الأربع
@@ -499,6 +511,9 @@ function render(keepScroll) {
   applyLanguage();
   renderTopbar();
   const { screen, audience, params } = parseHash();
+  // الواجهة الأولى لها ألوانها الخاصة؛ باقي الشاشات تبقى بيضاء هادئة
+  const known = ['methods','ready','free','result','describe','quiz','mycolors','options','upload','saved','gallery'];
+  document.body.classList.toggle('home-page', !known.includes(screen));
 
   if (screen === 'methods') renderMethods(audience);
   else if (screen === 'ready') renderReady(audience);
