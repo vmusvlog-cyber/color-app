@@ -53,6 +53,7 @@ js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
 js/app.js         State, home/methods/ready/free screens, navigation (router), startApp
 supabase/schema.sql  Tables + Row Level Security (run once in Supabase SQL Editor)
 SETUP-SUPABASE.md    Owner's Arabic step-by-step guide: Supabase + Netlify + keys
+NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Phase 6, Google)
 ```
 
 ## Phase status
