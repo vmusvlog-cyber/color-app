@@ -391,25 +391,8 @@ function defaultPreviewKind(params) {
 function renderPreviews(colors, style) {
   const params = resultParams; // معلومات النتيجة الحالية (المجال ومكان الاستخدام)
   const kind = state.previewKind || defaultPreviewKind(params);
-
-  const pair = FONT_PAIRS[style][state.fontIndex];
-  const fonts = currentLang === 'ar' ? pair.ar : pair.en;
-  const headFont = `'${fonts[0]}', sans-serif`, bodyFont = `'${fonts[1]}', sans-serif`;
-  const head = `font-family:${headFont}; font-weight:${headingWeight(fonts[0])};`;
-  const body = `font-family:${bodyFont};`;
-
-  const name = escapeHtml(state.projectName.trim() || t('preview.defaultName'));
-  const initial = Array.from(name)[0] || '';
-
-  // أدوار الألوان: رئيسي (خلفية)، ثانوي، تمييز، وإضافيان
-  const main = colors[0];
-  const sec = colors[1] || colors[0];
-  const acc = colors[2] || sec;
-  const extra = colors[3] || acc;
-  const support = colors[4] || extra;
-  const on = (bg) => readableOn(bg, colors); // أوضح لون للكتابة فوق خلفية
-  // لون التمييز للكتابة فوق الخلفية الرئيسية فقط إن كان مقروءاً، وإلا الثانوي
-  const accText = contrastRatio(main, acc) >= 3 ? acc : on(main);
+  const isFacade = kind === 'room' && params.space === 'facade';
+  const label = isFacade ? t('preview.facade') : t('preview.' + kind);
 
   // أيقونات الاختيار
   document.getElementById('preview-picker').innerHTML = PREVIEW_KINDS.map((k) => `
@@ -418,167 +401,84 @@ function renderPreviews(colors, style) {
       <span>${k.id === 'room' && params.space === 'facade' ? t('preview.facade') : t('preview.' + k.id)}</span>
     </button>`).join('');
 
-  const views = {
-    // منشور سوشيال
-    social: `
-      <div class="pv-social" style="background:${sec}; ${body}">
-        <span class="pv-circle" style="background:${acc}"></span>
-        <span class="pv-circle small" style="background:${extra}"></span>
-        <span class="pv-brand" style="color:${on(sec)}">${name}</span>
-        <span class="pv-post-title" style="${head} color:${on(sec)}">${t('preview.postText')}</span>
-        <span class="pv-btn" style="background:${acc}; color:${on(acc)}">${t('preview.postCta')}</span>
-      </div>`,
-
-    // بطاقة عمل
-    card: `
-      <div class="pv-card" style="background:${main}; ${body}">
-        <span class="pv-card-strip" style="background:${acc}"></span>
-        <span class="pv-mark" style="background:${sec}; color:${on(sec)}; ${head}">${initial}</span>
-        <span class="pv-card-person" style="${head} color:${on(main)}">${t('preview.cardPerson')}</span>
-        <span class="pv-card-role" style="color:${on(main)}">${t('preview.cardRole')} · ${name}</span>
-        <span class="pv-card-contact" dir="ltr" style="color:${on(main)}">hello@example.com</span>
-      </div>`,
-
-    // الشعار
-    logo: `
-      <div class="pv-logo" style="background:${main}">
-        <span class="pv-mark big" style="background:${acc}; color:${on(acc)}; ${head}">${initial}</span>
-        <span class="pv-logo-name" style="${head} color:${on(main)}">${name}</span>
-        <span class="pv-logo-tag" style="${body} color:${on(main)}">${t('preview.tagline')}</span>
-      </div>`,
-
-    // رأس موقع
-    web: `
-      <div class="pv-web" style="${body}">
-        <div class="pv-nav" style="background:${main}; color:${on(main)}">
-          <span style="${head}">${name}</span>
-          <span class="pv-links"><span>${t('preview.nav1')}</span><span>${t('preview.nav2')}</span><span>${t('preview.nav3')}</span></span>
-        </div>
-        <div class="pv-hero" style="background:${sec}; color:${on(sec)}">
-          <span class="pv-hero-title" style="${head}">${t('preview.heroTitle', { name })}</span>
-          <span>${t('preview.tagline')}</span>
-          <span class="pv-btn" style="background:${acc}; color:${on(acc)}">${t('preview.cta')}</span>
-        </div>
-      </div>`,
-
-    // تطبيق جوال: شاشة هاتف
-    app: `
-      <div class="pv-phone" style="background:${main}; ${body}">
-        <div class="pv-phone-top" style="background:${sec}; color:${on(sec)}">
-          <span class="pv-mark" style="background:${acc}; color:${on(acc)}; ${head}">${initial}</span>
-          <span style="${head}">${name}</span>
-        </div>
-        <div class="pv-phone-body">
-          <span style="${head} color:${on(main)}; font-size:1.2rem">${t('preview.app.hello')}</span>
-          <div class="pv-phone-card" style="background:${extra}; color:${on(extra)}">${t('preview.app.card')}</div>
-          <div class="pv-phone-row">
-            <span style="background:${support}"></span><span style="background:${acc}"></span><span style="background:${sec}"></span>
-          </div>
-          <span class="pv-btn" style="background:${acc}; color:${on(acc)}; align-self:stretch; text-align:center">${t('preview.cta')}</span>
-        </div>
-        <div class="pv-phone-nav" style="border-color:${extra}">
-          <i style="background:${acc}"></i><i style="background:${extra}"></i><i style="background:${extra}"></i>
-        </div>
-      </div>`,
-
-    // قائمة طعام
-    menu: `
-      <div class="pv-menu" style="background:${main}; color:${on(main)}; ${body}">
-        <span class="pv-menu-name" style="${head} color:${on(main)}">${name}</span>
-        <span class="pv-menu-title" style="color:${accText}">— ${t('preview.menu.title')} —</span>
-        ${[1, 2, 3].map((n) => `
-          <div class="pv-menu-item" style="border-color:${extra}">
-            <span>${t('preview.menu.item' + n)}</span>
-            <strong dir="ltr" style="color:${accText}">${[18, 12, 15][n - 1]}</strong>
-          </div>`).join('')}
-        <span class="pv-menu-bar" style="background:${sec}"></span>
-      </div>`,
-
-    // تغليف: علبة مرسومة
-    packaging: `
-      <div class="pv-scene" style="background:${extra}">${packagingSvg({ main, sec, acc, name, initial, headFont, on })}</div>`,
-
-    // غرفة أو واجهة مبنى
-    room: `
-      <div class="pv-scene">${params.space === 'facade' ? facadeSvg({ main, sec, acc, extra, support }) : roomSvg({ main, sec, acc, extra, support })}</div>`,
+  // معلومات البرومبت: الألوان، الأسلوب، الإحساس، المكان، الاسم، والخط (الإنجليزي لأن البرومبت إنجليزي)
+  const pair = FONT_PAIRS[style][state.fontIndex];
+  const ctx = {
+    colors: colors.slice(0, 5), style, feel: state.refine.feel, temp: state.refine.temp,
+    space: params.space, name: state.projectName.trim(), headFont: pair.en[0],
   };
+  const prompts = buildPrompts(kind, ctx);
+  const query = inspirationQuery(kind, ctx);
+  const pinQuery = `${colorNameEn(colors[1] || colors[0])} ${colorNameEn(colors[2] || colors[0])} ${query}`;
 
-  const label = kind === 'room' && params.space === 'facade' ? t('preview.facade') : t('preview.' + kind);
   document.getElementById('previews').innerHTML = `
-    <figure class="pv">${views[kind]}<figcaption>${label}</figcaption></figure>`;
+    <div class="prompt-intro">
+      <p>🪄 ${t('prompt.intro', { place: label })}</p>
+      <div class="ai-links">
+        <a class="btn btn-small" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT ↗</a>
+        <a class="btn btn-small" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini ↗</a>
+      </div>
+    </div>
+    <div class="prompt-list">
+      ${prompts.map((pr, i) => `
+        <div class="prompt-card">
+          <div class="prompt-head">
+            <strong>${i + 1}. ${t('prompt.v.' + pr.key)}</strong>
+            <button type="button" class="btn btn-small btn-primary" data-copy-prompt="${i}">📋 ${t('prompt.copy')}</button>
+          </div>
+          <p class="prompt-text" dir="ltr" id="prompt-${i}">${escapeHtml(pr.text)}</p>
+        </div>`).join('')}
+    </div>
 
-  // اختيار معاينة أخرى
+    <section class="inspo">
+      <h3>📷 ${t('photo.title', { place: label })}</h3>
+      <div id="inspo-photos">${unsplashEnabled() ? `<p class="small-hint">${t('photo.loading')}</p>` : ''}</div>
+      <div class="actions">
+        <a class="btn" href="${unsplashSearchUrl(query, unsplashColor(colors[1] || colors[0]))}" target="_blank" rel="noopener">📷 ${t('photo.openUnsplash')}</a>
+        <a class="btn" href="${pinterestSearchUrl(pinQuery)}" target="_blank" rel="noopener">📌 ${t('photo.openPinterest')}</a>
+      </div>
+    </section>
+  `;
+
+  // نسخ البرومبت (وإن منع المتصفح النسخ، نحدد النص حتى ينسخه المستخدم بنفسه)
+  document.querySelectorAll('[data-copy-prompt]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.copyPrompt);
+      const text = prompts[i].text;
+      const selectText = () => {
+        const range = document.createRange();
+        range.selectNodeContents(document.getElementById('prompt-' + i));
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        toast(t('prompt.copyFail'));
+      };
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(() => toast(t('prompt.copied'))).catch(selectText);
+      } else {
+        selectText();
+      }
+    });
+  });
+
+  // اختيار مكان آخر
   document.querySelectorAll('[data-kind]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.previewKind = btn.dataset.kind;
       renderPreviews(colors, style);
     });
   });
-}
 
-/* درجة أغمق أو أفتح من لون (للظلال والأرضيات) */
-function shade(hex, dl) {
-  const { h, s, l } = hexToHsl(hex);
-  return hslToHex(h, s, clamp(l + dl, 4, 96));
-}
-
-/* رسم غرفة جلوس: الجدار = الرئيسي، الكنبة = الثانوي، الوسائد واللوحة = التمييز */
-function roomSvg(c) {
-  const floor = shade(c.extra, hexToHsl(c.extra).l > 50 ? -25 : 10);
-  return `<svg viewBox="0 0 320 200" role="img" aria-hidden="true">
-    <rect width="320" height="150" fill="${c.main}"/>
-    <rect y="150" width="320" height="50" fill="${floor}"/>
-    <rect y="147" width="320" height="4" fill="${shade(c.main, -12)}"/>
-    <rect x="28" y="28" width="70" height="78" rx="3" fill="#EAF2F8" stroke="${c.sec}" stroke-width="4"/>
-    <line x1="63" y1="28" x2="63" y2="106" stroke="${c.sec}" stroke-width="3"/>
-    <rect x="200" y="32" width="68" height="46" fill="${c.acc}" stroke="#FFFFFF" stroke-width="4"/>
-    <circle cx="220" cy="50" r="7" fill="${c.support}" opacity=".85"/>
-    <ellipse cx="185" cy="182" rx="118" ry="13" fill="${c.support}" opacity=".9"/>
-    <rect x="112" y="96" width="146" height="34" rx="10" fill="${shade(c.sec, 6)}"/>
-    <rect x="104" y="120" width="162" height="38" rx="8" fill="${c.sec}"/>
-    <rect x="98" y="112" width="18" height="46" rx="7" fill="${shade(c.sec, -8)}"/>
-    <rect x="254" y="112" width="18" height="46" rx="7" fill="${shade(c.sec, -8)}"/>
-    <rect x="126" y="104" width="34" height="24" rx="6" fill="${c.acc}"/>
-    <rect x="210" y="104" width="34" height="24" rx="6" fill="${c.support}"/>
-    <rect x="112" y="158" width="6" height="10" fill="${shade(c.sec, -20)}"/>
-    <rect x="252" y="158" width="6" height="10" fill="${shade(c.sec, -20)}"/>
-    <rect x="284" y="128" width="20" height="26" rx="3" fill="${c.acc}"/>
-    <ellipse cx="290" cy="116" rx="7" ry="16" fill="#5E8C61"/>
-    <ellipse cx="300" cy="112" rx="6" ry="14" fill="#6FA072"/>
-  </svg>`;
-}
-
-/* رسم واجهة مبنى أو فيلا: الجدار = الرئيسي، الإطارات والسقف = الثانوي، الباب = التمييز */
-function facadeSvg(c) {
-  return `<svg viewBox="0 0 320 200" role="img" aria-hidden="true">
-    <rect width="320" height="200" fill="#DDEBF3"/>
-    <rect y="176" width="320" height="24" fill="#9DB08A"/>
-    <rect x="50" y="62" width="220" height="116" fill="${c.main}" stroke="${shade(c.main, -12)}"/>
-    <polygon points="40,64 160,20 280,64" fill="${c.sec}"/>
-    <rect x="44" y="60" width="232" height="8" fill="${shade(c.sec, -8)}"/>
-    ${[70, 120, 196, 234].map((x) => `
-      <rect x="${x}" y="84" width="26" height="32" fill="#EAF2F8" stroke="${c.sec}" stroke-width="3"/>`).join('')}
-    ${[70, 234].map((x) => `
-      <rect x="${x}" y="128" width="26" height="30" fill="#EAF2F8" stroke="${c.sec}" stroke-width="3"/>`).join('')}
-    <rect x="140" y="120" width="40" height="58" rx="3" fill="${c.acc}"/>
-    <circle cx="172" cy="150" r="2.5" fill="${c.support}"/>
-    <rect x="130" y="176" width="60" height="6" fill="${c.extra}"/>
-  </svg>`;
-}
-
-/* رسم علبة تغليف عليها اسم المشروع */
-function packagingSvg(c) {
-  // العلبة: وجه أمامي + وجه علوي (أفتح) + جانب (أغمق) حتى تبدو ثلاثية الأبعاد
-  return `<svg viewBox="0 0 320 200" role="img" aria-hidden="true">
-    <polygon points="110,58 210,58 240,40 140,40" fill="${shade(c.main, 8)}"/>
-    <polygon points="210,58 240,40 240,160 210,178" fill="${shade(c.main, -14)}"/>
-    <rect x="110" y="58" width="100" height="120" fill="${c.main}"/>
-    <rect x="110" y="112" width="100" height="16" fill="${c.sec}"/>
-    <polygon points="210,112 240,94 240,110 210,128" fill="${shade(c.sec, -10)}"/>
-    <circle cx="160" cy="88" r="16" fill="${c.acc}"/>
-    <text x="160" y="94" text-anchor="middle" font-size="17" style="font-family:${c.headFont}; fill:${c.on(c.acc)}">${c.initial}</text>
-    <text x="160" y="154" text-anchor="middle" font-size="13" style="font-family:${c.headFont}; fill:${c.on(c.main)}">${c.name}</text>
-  </svg>`;
+  // الصور الملهمة داخل التطبيق (فقط إن وُجد مفتاح Unsplash)
+  if (unsplashEnabled()) {
+    const box = document.getElementById('inspo-photos');
+    unsplashPhotos(query, unsplashColor(colors[1] || colors[0]), 4)
+      .then((photos) => {
+        if (!document.body.contains(box)) return;
+        box.innerHTML = photos.length ? photosGridHtml(photos) : `<p class="small-hint">${t('photo.none')}</p>`;
+      })
+      .catch(() => { if (document.body.contains(box)) box.innerHTML = `<p class="small-hint">${t('photo.error')}</p>`; });
+  }
 }
 
 /* ---------- سجل الألوان (للسهمين تحت كل بطاقة) ----------

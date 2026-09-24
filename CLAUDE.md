@@ -51,6 +51,10 @@ js/download.js    Download window (sign-up → 3 feedback questions → PNG/PDF)
 js/config.js      Supabase URL + public anon key (empty = local-only mode)
 js/cloud.js       All Supabase calls: magic-link auth, palettes, gallery, likes, feedback
 js/gallery.js     Gallery screen (#/gallery, filters + likes), sign-in modal, My palettes
+js/prompts.js     Ready English image prompts (4 per place) with the palette's HEX codes,
+                  for ChatGPT/Gemini; Unsplash search words. (English-only by owner decision,
+                  so these templates live here, not in i18n.js)
+js/unsplash.js    Unsplash: search links (no key) and in-app photos + credits (with key)
 js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
 js/app.js         State, home/methods/ready/free screens, navigation (router), startApp
 supabase/schema.sql  Tables + Row Level Security (run once in Supabase SQL Editor)
@@ -88,7 +92,10 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       Result previews: "👁 Where do you want to see your colors?" picker with 8 previews
       (logo, social, room/facade, web, app, card, packaging, menu); only the chosen one shows,
       auto-picked from the answers.
-- [x] Redesign Part A done (colors). Part B and C still to do.
+- [x] Redesign Part A done (colors).
+- [x] Redesign Part B done (prompts + Unsplash). Drawn previews removed. UNSPLASH_ACCESS_KEY in
+      config.js is empty until the owner creates one (see SETUP-SUPABASE.md); without it the
+      quiz keeps its drawings and the result shows Unsplash/Pinterest search buttons.
 - [ ] Redesign (owner's 20 answers, customers' feedback "colors too dark, no strength"):
       Part A — colors: background always light (only Luxury stays dark, or user picks dark);
       remove all 60-30-10 percentages; palette size 3/4/5 chosen by user (default 5); result

@@ -103,3 +103,13 @@ function styleScene(style) {
   };
   return svgFrame(scenes[style]);
 }
+
+/* كلمات بحث Unsplash لصور الاستبيان الحقيقية (تُستخدم فقط إن وُجد مفتاح Unsplash) */
+const MOOD_PHOTO_QUERY = {
+  calm: 'calm sea horizon', energetic: 'vibrant sunrise energy', warm: 'warm cozy sunset',
+  elegant: 'elegant luxury interior', natural: 'green leaves nature', playful: 'colorful playful balloons',
+};
+const STYLE_PHOTO_QUERY = {
+  minimal: 'minimalist white interior', luxury: 'luxury interior gold marble', bold: 'bold colorful design',
+  earthy: 'earthy natural interior wood', retro: 'retro 70s interior',
+};

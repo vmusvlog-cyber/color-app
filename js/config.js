@@ -13,3 +13,11 @@
 
 const SUPABASE_URL = 'https://ffdpcfqtnldxgcgjffbz.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_xSNBgw6ZqaZNFMxiXlCXAA_tUBpfBpe'; // المفتاح العام (Publishable)
+
+/* =========================================================================
+   مفتاح Unsplash (للصور الحقيقية داخل التطبيق) — اختياري
+   احصل عليه مجاناً من: https://unsplash.com/developers ← Your apps ← New Application
+   ثم انسخ "Access Key" وضعه هنا. (لا تضع "Secret key" أبداً)
+   إذا تركته فارغاً: يظهر زر يفتح صور Unsplash الملهمة في صفحة جديدة بدل ذلك.
+   ========================================================================= */
+const UNSPLASH_ACCESS_KEY = '';

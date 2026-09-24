@@ -140,6 +140,26 @@ function renderQuiz(audience, fresh) {
 
   const prev = document.getElementById('quiz-prev');
   if (prev) prev.addEventListener('click', () => { state.quiz.step--; renderQuiz(audience); });
+
+  // صور حقيقية بدل الرسومات في سؤالي المزاج والأسلوب (إن وُجد مفتاح Unsplash)
+  if ((q.type === 'mood' || q.type === 'style') && unsplashEnabled()) loadQuizPhotos(q);
+}
+
+/* يستبدل رسمة كل خيار بصورة حقيقية، ويكتب اسم المصوّر تحتها */
+function loadQuizPhotos(q) {
+  const queries = q.type === 'mood' ? MOOD_PHOTO_QUERY : STYLE_PHOTO_QUERY;
+  app.querySelectorAll('.choice-image').forEach((btn) => {
+    const opt = btn.dataset.value;
+    unsplashPhotos(queries[opt], '', 1)
+      .then((photos) => {
+        const photo = photos[0];
+        if (!photo || !document.body.contains(btn)) return;
+        btn.querySelector('.choice-pic').innerHTML = `<img src="${photo.thumb}" alt="${escapeHtml(photo.alt)}">`;
+        btn.querySelector('.choice-label').insertAdjacentHTML('beforeend',
+          `<small class="photo-credit">📷 ${escapeHtml(photo.author)} · Unsplash</small>`);
+      })
+      .catch(() => { /* نبقي الرسمة إن فشل التحميل */ });
+  });
 }
 
 /* ---------- عندي ألوان: اكتب اسماً أو كوداً، أو اختر من العجلة ---------- */
