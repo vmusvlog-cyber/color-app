@@ -75,6 +75,13 @@ function renderResult(audience, params) {
       <p>${t('result.ratioHint')}</p>
     </section>
 
+    <!-- أزرار: تحميل، حفظ، مشاركة -->
+    <div class="action-bar">
+      <button type="button" class="btn btn-primary" id="download-btn">⬇ ${t('action.download')}</button>
+      <button type="button" class="btn" id="save-btn">♡ ${t('action.save')}</button>
+      <button type="button" class="btn" id="share-btn">🔗 ${t('action.share')}</button>
+    </div>
+
     <!-- 1ب) خيارات العرض -->
     <section class="view-box">
       <div class="view-toggles" role="group" aria-label="${t('view.title')}">
@@ -136,6 +143,22 @@ function renderResult(audience, params) {
     history.replaceState(null, '', `#/result/${audience.id}?${next.toString()}`);
     render(true);                         // true = لا تقفز لأعلى الصفحة
   };
+
+  // تحميل: نحمّل الألوان كما تظهر الآن (مع النسخة الداكنة أو للطباعة إن كانت مفعّلة)
+  document.getElementById('download-btn').addEventListener('click', () => openDownload(shown, title));
+
+  // حفظ في "لوحاتي" على هذا الجهاز
+  document.getElementById('save-btn').addEventListener('click', () => {
+    savePalette({ colors: shown, title: params.p ? params.p : null, style, audience: audience.id });
+    renderTopbar(); // لتحديث العدد بجانب "لوحاتي"
+    toast(t('action.saved'));
+  });
+
+  // مشاركة الرابط: في الجوال تظهر قائمة المشاركة، وإلا ننسخ الرابط
+  document.getElementById('share-btn').addEventListener('click', () => {
+    const url = location.href.split('#')[0] + `#/result/${audience.id}?c=${colorsToParam(shown)}&s=${style}`;
+    sharePaletteLink(url, title);
+  });
 
   // نسخ كود اللون
   app.querySelectorAll('.hex-btn').forEach((btn) => {
@@ -362,6 +385,62 @@ function renderPreviews(colors, style) {
       <figcaption>${t('preview.web')}</figcaption>
     </figure>
   `;
+}
+
+/* ---------- المشاركة ---------- */
+function sharePaletteLink(url, title) {
+  const copy = () => {
+    if (navigator.clipboard) navigator.clipboard.writeText(url).catch(() => {});
+    toast(t('action.shareCopied'));
+  };
+  if (navigator.share) {
+    // قائمة المشاركة في الجوال (واتساب، رسائل...). إن أُلغيت أو لم تعمل ننسخ الرابط
+    navigator.share({ title, url }).catch((err) => { if (err && err.name !== 'AbortError') copy(); });
+  } else {
+    copy();
+  }
+}
+
+/* ---------- شاشة "لوحاتي" ---------- */
+function renderSaved() {
+  const list = getSavedPalettes();
+  app.innerHTML = `
+    ${backLink('#/')}
+    <header class="page-head">
+      <h1>${t('saved.title')}</h1>
+      <p class="lead">${t('saved.subtitle')}</p>
+    </header>
+    ${list.length === 0 ? `<p class="zone-empty">${t('saved.empty')}</p>` : `
+      <div class="palette-grid">
+        ${list.map((p) => {
+          const name = p.title ? t('pal.' + p.title) : t('saved.untitled');
+          const date = new Date(p.date).toLocaleDateString(currentLang === 'ar' ? 'ar' : 'en');
+          const href = `#/result/${p.audience || 'beginner'}?c=${colorsToParam(p.colors)}&s=${p.style}`;
+          return `
+            <div class="palette-tile saved-tile">
+              <a class="tile-strip" href="${href}">
+                ${p.colors.map((c) => `<i style="background:${c}"></i>`).join('')}
+              </a>
+              <div class="tile-name saved-row">
+                <span><strong>${name}</strong><small>${date}</small></span>
+                <span class="saved-actions">
+                  <a class="btn btn-small" href="${href}">${t('saved.open')}</a>
+                  <button type="button" class="btn btn-small btn-danger" data-delete="${p.id}">${t('saved.delete')}</button>
+                </span>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>`}
+  `;
+
+  app.querySelectorAll('[data-delete]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      deletePalette(Number(btn.dataset.delete));
+      toast(t('saved.deleted'));
+      renderTopbar();
+      renderSaved();
+    });
+  });
 }
 
 /* ---------- خيارات العرض ---------- */

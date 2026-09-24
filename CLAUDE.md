@@ -37,6 +37,9 @@ js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
 js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
 js/image.js       "Upload image": in-browser k-means color extraction, adjusted options
 js/variants.js    Dark version, print-safe version + CMYK, gradients, culture notes/adjust
+js/storage.js     localStorage helpers: saved palettes, simple account, feedback answers
+js/download.js    Download window (sign-up → 3 feedback questions → PNG/PDF), canvas
+                  drawing of the cards, and a tiny PDF writer (no external library)
 js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
 js/app.js         State, home/methods/ready/free screens, navigation (router)
 ```
@@ -48,7 +51,10 @@ js/app.js         State, home/methods/ready/free screens, navigation (router)
       and "stand out from competitors".
 - [x] Phase 3: Image upload + k-means extraction (keep or adjusted suggestions), toggles
       (gradients, dark version, for print with CMYK), culture icon (6 regions, notes + adjust).
-- [ ] Phase 4
+- [x] Phase 4: Download PNG/PDF (own PDF writer, works offline), sign-up + 3 feedback
+      questions asked once per device, Save to "My palettes" (#/saved), Share link.
+      Account, feedback and saved palettes are stored in localStorage only for now;
+      Phase 5 moves them to a real server/database.
 - [ ] Phase 5
 - [ ] Phase 6
 

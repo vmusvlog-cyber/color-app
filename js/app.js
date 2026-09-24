@@ -105,12 +105,16 @@ function formatPercent(n) {
    الشريط العلوي (اسم التطبيق + زر تغيير اللغة)
    ========================================================================= */
 function renderTopbar() {
+  const savedCount = getSavedPalettes().length;
   document.getElementById('topbar').innerHTML = `
     <a class="brand" href="#/">
       <span class="brand-dots" aria-hidden="true"><i></i><i></i><i></i></span>
       ${t('app.name')}
     </a>
-    <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
+    <nav class="top-actions">
+      <a class="lang-btn" href="#/saved">♡ ${t('nav.saved')}${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
+      <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
+    </nav>
   `;
   document.getElementById('lang-btn').addEventListener('click', () => {
     setLang(currentLang === 'ar' ? 'en' : 'ar');
@@ -483,6 +487,7 @@ function render(keepScroll) {
   else if (screen === 'mycolors') renderMyColors(audience);
   else if (screen === 'options') renderOptions(audience, params);
   else if (screen === 'upload') renderUpload(audience);
+  else if (screen === 'saved') renderSaved();
   else renderHome();
 
   if (!keepScroll) window.scrollTo(0, 0);
