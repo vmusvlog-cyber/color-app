@@ -148,6 +148,48 @@ function paletteStrip(ctx, colors, x, y, w, h) {
   colors.forEach((c, i) => { ctx.fillStyle = c; ctx.fillRect(x + i * cw, y, cw + 1, h); });
 }
 
+/*
+  يلوّن مساحة حسب "شكل الألوان" الذي اختاره العميل:
+    solid = لون صافٍ، grad2 = تدرج لونين، grad3 = تدرج 3 ألوان، glass = دوائر شفافة خلف المحتوى
+  i = رقم المساحة، حتى تتنوع الأشكال إن اختار أكثر من شكل.
+  يرجع لون الكتابة الأوضح فوق هذه المساحة.
+*/
+function paintArea(ctx, k, x, y, w, h, r, i = 0, shadow = false) {
+  const effect = k.effects[i % k.effects.length];
+  let stops = [k.main];
+  let fill = k.main;
+  if (effect === 'grad2' || effect === 'grad3') {
+    stops = effect === 'grad2' ? [k.main, k.accent] : [k.main, k.accent, k.support];
+    fill = ctx.createLinearGradient(x, y, x + w, y + h);
+    stops.forEach((c, j) => fill.addColorStop(j / (stops.length - 1), c));
+  }
+  box(ctx, x, y, w, h, r, fill, shadow);
+  if (effect === 'glass') {
+    // دوائر شفافة بألوان اللوحة خلف المحتوى
+    ctx.save();
+    roundedRect(ctx, x, y, w, h, r);
+    ctx.clip();
+    ctx.globalAlpha = 0.35;
+    circle(ctx, x + w * 0.85, y + h * 0.18, Math.min(w, h) * 0.42, k.accent);
+    circle(ctx, x + w * 0.12, y + h * 0.9, Math.min(w, h) * 0.36, k.light);
+    ctx.globalAlpha = 0.25;
+    circle(ctx, x + w * 0.55, y + h * 0.6, Math.min(w, h) * 0.22, k.support);
+    ctx.restore();
+  }
+  return inkFor(k, stops);
+}
+
+/* لون كتابة يُقرأ فوق كل ألوان التدرج */
+function inkFor(k, stops) {
+  const candidates = [k.light, k.dark, '#FFFFFF', '#111111'];
+  let best = candidates[0], bestScore = 0;
+  candidates.forEach((ink) => {
+    const score = Math.min(...stops.map((c) => contrastRatio(ink, c)));
+    if (score > bestScore) { bestScore = score; best = ink; }
+  });
+  return best;
+}
+
 /* الشعار الكامل: الاسم بخط العناوين (يصغر حتى يتسع) */
 function wordmark(ctx, k, cx, cy, maxW, max, color) {
   const size = fitSize(ctx, k.name, k.head, 700, maxW, max);
@@ -192,9 +234,7 @@ function label(ctx, k, text, y, x) {
 
 /* 1) الغلاف */
 function pageCover(ctx, k) {
-  ctx.fillStyle = k.main;
-  ctx.fillRect(0, 0, PAGE_W, PAGE_H);
-  const ink = onColor(k, k.main);
+  const ink = paintArea(ctx, k, 0, 0, PAGE_W, PAGE_H - 220, 0, 0);
   drawText(ctx, t('brand.guideName'), PAGE_W / 2, 200, { size: 30, font: k.body, weight: 700, color: ink, align: 'center' });
   monogram(ctx, k, PAGE_W / 2, 560, 130, k.light, k.main);
   wordmark(ctx, k, PAGE_W / 2, 820, PAGE_W - 2 * PAGE_M, 130, ink);
@@ -372,7 +412,12 @@ function pageInstagram(ctx, k) {
     const cx = PAGE_M + 90 + i * ((PAGE_W - 2 * PAGE_M - 180) / 4);
     const pos = k.ar ? PAGE_W - cx : cx;
     ctx.strokeStyle = '#D1D1D6'; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(pos, 660, 86, 0, Math.PI * 2); ctx.stroke();
-    circle(ctx, pos, 660, 78, fills[i]);
+    // مع التدرج: كل دائرة تدرج من لونها إلى لون التمييز
+    if (k.effects.some((e) => e.startsWith('grad'))) {
+      const g = ctx.createLinearGradient(pos - 78, 582, pos + 78, 738);
+      g.addColorStop(0, fills[i]); g.addColorStop(1, fills[i] === k.accent ? k.main : k.accent);
+      circle(ctx, pos, 660, 78, g);
+    } else circle(ctx, pos, 660, 78, fills[i]);
     const word = t('brand.hl.' + n);
     const size = fitSize(ctx, word, k.head, 700, 120, 30);
     drawText(ctx, word, pos, 662, { size, font: k.head, weight: 700, color: onColor(k, fills[i]), align: 'center', baseline: 'middle' });
@@ -382,16 +427,16 @@ function pageInstagram(ctx, k) {
   // بوست مربع + ستوري
   const py = 880, ps = 560;
   const postX = k.ar ? PAGE_W - PAGE_M - ps : PAGE_M;
-  box(ctx, postX, py, ps, ps, 16, k.main, true);
-  const ink = onColor(k, k.main);
+  const ink = paintArea(ctx, k, postX, py, ps, ps, 16, 0, true);
   drawText(ctx, k.info.desc || k.name, postX + ps / 2, py + 170, { size: 40, font: k.head, weight: 700, color: ink, align: 'center', maxW: ps - 90, lineH: 56, maxLines: 5 });
   box(ctx, postX + ps / 2 - 110, py + ps - 130, 220, 64, 32, k.accent);
   drawText(ctx, t('brand.ig.cta'), postX + ps / 2, py + ps - 90, { size: 24, font: k.body, weight: 700, color: onColor(k, k.accent), align: 'center' });
   const sw = 315, sh = 560, sx = k.ar ? PAGE_M : PAGE_W - PAGE_M - sw;
-  box(ctx, sx, py, sw, sh, 16, k.light, true);
+  // الستوري: بشكل ألوان آخر (إن اختار أكثر من شكل)، وإلا خلفية فاتحة
+  const storyInk = k.effects.length > 1 || k.effects[0] !== 'solid' ? paintArea(ctx, k, sx, py, sw, sh, 16, 1, true) : (box(ctx, sx, py, sw, sh, 16, k.light, true), k.dark);
   paletteStrip(ctx, k.colors, sx + 20, py + 20, sw - 40, 6);
   monogram(ctx, k, k.ar ? sx + sw - 50 : sx + 50, py + 70, 22, k.main, onColor(k, k.main));
-  drawText(ctx, t('brand.hook.1', { brand: k.name }), sx + sw / 2, py + 220, { size: 34, font: k.head, weight: 700, color: k.dark, align: 'center', maxW: sw - 50, lineH: 46, maxLines: 5 });
+  drawText(ctx, t('brand.hook.1', { brand: k.name }), sx + sw / 2, py + 220, { size: 34, font: k.head, weight: 700, color: storyInk, align: 'center', maxW: sw - 50, lineH: 46, maxLines: 5 });
   circle(ctx, sx + sw - 70, py + sh - 80, 42, k.accent);
   label(ctx, k, t('brand.ig.post'), py + ps + 50, postX + ps / 2);
   label(ctx, k, t('brand.ig.story'), py + sh + 50, sx + sw / 2);
@@ -402,11 +447,9 @@ function pageFacebook(ctx, k) {
   const w = PAGE_W - 2 * PAGE_M, x = PAGE_M;
   // غلاف فيسبوك (2.63 : 1)
   const fh = Math.round(w / 2.63), fy = 330;
-  const grad = ctx.createLinearGradient(x, fy, x + w, fy + fh);
-  grad.addColorStop(0, k.main); grad.addColorStop(1, k.accent);
-  box(ctx, x, fy, w, fh, 16, grad, true);
-  wordmark(ctx, k, x + w / 2, fy + fh * 0.42, w * 0.7, 76, onColor(k, k.main));
-  drawText(ctx, k.info.desc, x + w / 2, fy + fh * 0.65, { size: 26, font: k.body, color: onColor(k, k.main), align: 'center', maxW: w * 0.7, lineH: 36, maxLines: 2 });
+  const fbInk = paintArea(ctx, k, x, fy, w, fh, 16, 2, true);
+  wordmark(ctx, k, x + w / 2, fy + fh * 0.42, w * 0.7, 76, fbInk);
+  drawText(ctx, k.info.desc, x + w / 2, fy + fh * 0.65, { size: 26, font: k.body, color: fbInk, align: 'center', maxW: w * 0.7, lineH: 36, maxLines: 2 });
   monogram(ctx, k, k.ar ? x + w - 110 : x + 110, fy + fh, 70, k.light, k.main);
   label(ctx, k, t('brand.fb.cover'), fy - 25);
 
@@ -437,8 +480,8 @@ function pageVideo(ctx, k) {
   // غلاف تيك توك 9:16
   const tw = 330, th = 587, tx = k.ar ? PAGE_W - PAGE_M - tw : PAGE_M, ty = 300;
   box(ctx, tx, ty, tw, th, 18, k.dark, true);
-  box(ctx, tx + 24, ty + 150, tw - 48, 170, 12, k.main);
-  drawText(ctx, t('brand.hook.2', { brand: k.name }), tx + tw / 2, ty + 215, { size: 34, font: k.head, weight: 700, color: onColor(k, k.main), align: 'center', maxW: tw - 80, lineH: 44, maxLines: 3 });
+  const hookInk = paintArea(ctx, k, tx + 24, ty + 150, tw - 48, 170, 12, 1);
+  drawText(ctx, t('brand.hook.2', { brand: k.name }), tx + tw / 2, ty + 215, { size: 34, font: k.head, weight: 700, color: hookInk, align: 'center', maxW: tw - 80, lineH: 44, maxLines: 3 });
   drawText(ctx, k.name, tx + tw / 2, ty + th - 50, { size: 24, font: k.head, weight: 700, color: k.light, align: 'center' });
   label(ctx, k, t('brand.video.tiktok'), ty + th + 45, tx + tw / 2);
 
@@ -505,9 +548,7 @@ function pageWebsite(ctx, k) {
   drawText(ctx, t('brand.web.cta'), k.ar ? cx - 120 : cx + 120, hy + hh - 88, { size: 22, font: k.body, weight: 700, color: onColor(k, k.main), align: 'center' });
   // مكان الصورة: تدرج من ألوان اللوحة
   const ix = k.ar ? x + 50 : x + w * 0.56, iw = w * 0.4;
-  const ig = ctx.createLinearGradient(ix, hy + 60, ix + iw, hy + hh - 60);
-  ig.addColorStop(0, k.accent); ig.addColorStop(1, k.main);
-  box(ctx, ix, hy + 60, iw, hh - 120, 24, ig);
+  paintArea(ctx, k, ix, hy + 60, iw, hh - 120, 24, 2);
   circle(ctx, ix + iw * 0.7, hy + 180, 50, k.light);
 
   // 3 بطاقات مميزات

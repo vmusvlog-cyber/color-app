@@ -61,6 +61,9 @@ js/unsplash.js    Unsplash: search links (no key) and in-app photos + credits (w
 js/brand.js       "Build your visual identity" (#/brand): 4 steps — colors (photo OR 3 questions
                   → 3 palettes), font (6 pairs), details (brand name required, text ≤250 chars,
                   optional contact + socials), guide (12 page previews, one PDF, copyable prompts)
+js/brandquiz.js   The 12 brand questions (who, field, audience, traits, feeling, where used, price,
+                  competitors, love colors, avoid colors, color look, how many colors) → profile
+                  → 3 palettes; color circles with a slide-up "Swap" button
 js/brandpages.js  Canvas drawing of the 12 A4 guide pages: cover, logo (wordmark/monogram/mark),
                   colors, fonts, business card, stationery, email signature, Instagram (profile,
                   highlight covers, post, story), Facebook & LinkedIn, TikTok & YouTube (cover,
@@ -156,6 +159,12 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       row). Output = ONE multi-page PDF brand guide (makePdfFromCanvases in download.js). The
       logo is a text logo (wordmark, 2-letter monogram, 1-letter mark); a drawn logo comes from
       the ready prompt. No sign-up gate on this PDF (yet).
+      Questions (owner's answers): 12, multi-select questions have NO limit (then "Next"); single:
+      who, price, count. Love/avoid = 16 color circles, each with "Swap" (slides up, new color
+      comes in); loved colors always appear, avoided families never do. After picking a palette,
+      a review screen lets you Swap any color the same way. "Color look" (solid / 2-color
+      gradient / 3-color gradient / transparent shapes) is drawn on the cover, posts, story,
+      highlights, Facebook cover, TikTok cover and website, and added to the prompts.
 - [ ] Phase 6
 
 ---

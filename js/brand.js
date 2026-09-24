@@ -1,34 +1,13 @@
 /* =========================================================================
    brand.js — خاصية "ابنِ هويتك البصرية" (#/brand)
    4 خطوات في شاشة واحدة:
-     1) ألوانك: 3 أسئلة سهلة، أو صورة (شعارك، منتجك، محلك...) ← 3 لوحات يختار واحدة
+     1) ألوانك: 12 سؤالاً بضغطات (brandquiz.js)، أو صورة ← 3 لوحات يختار واحدة
+        ← ثم يراجع لوحته ويبدّل أي لون لا يعجبه
      2) خطّك: 6 أزواج خطوط بألوان لوحته
      3) معلوماتك: اسم البراند (مطلوب) + نص حتى 4 أسطر + التواصل والسوشيال (اختياري)
      4) دليلك: 12 صفحة (ترسمها brandpages.js) + تحميل PDF واحد + أوامر صور للنسخ
    الخطوات محفوظة في state.brand (وليست في الرابط)، وزر "رجوع" يرجع خطوة.
    ========================================================================= */
-
-/* الأسئلة الثلاثة: كل خيار يحدد الإحساس وقوة الألوان والأسلوب (مثل sections.js) */
-const BRAND_QUESTIONS = [
-  { key: 'who', options: { personal: {}, business: {} } },
-  { key: 'field', options: {
-    fashion: { ind: 'fashion' }, beauty: { ind: 'fashion' }, food: { ind: 'food' }, tech: { ind: 'tech' },
-    health: { ind: 'health' }, education: { ind: 'education' }, realestate: { ind: 'home' },
-    creative: { ind: 'creative' }, finance: { ind: 'finance' }, retail: { ind: 'fashion' },
-  } },
-  { key: 'trait', options: {
-    trusted:  { feel: 'trust', mood: 'calm', style: 'minimal' },
-    luxury:   { feel: 'luxury', mood: 'elegant', style: 'luxury' },
-    modern:   { feel: 'pro', mood: 'calm', style: 'minimal' },
-    bold:     { feel: 'energy', mood: 'energetic', style: 'bold' },
-    friendly: { feel: 'joy', mood: 'warm', style: 'earthy' },
-    creative: { feel: 'creative', mood: 'playful', style: 'bold' },
-    calm:     { feel: 'calm', mood: 'calm', style: 'minimal' },
-    youthful: { feel: 'joy', mood: 'playful', style: 'bold' },
-    natural:  { feel: 'nature', mood: 'natural', style: 'earthy' },
-    expert:   { feel: 'pro', mood: 'elegant', style: 'minimal' },
-  } },
-];
 
 /* خانات المعلومات. name مطلوب، والباقي اختياري (ما يُترك فارغاً لا يظهر في الدليل) */
 const BRAND_FIELDS = ['person', 'title', 'phone', 'email', 'web', 'instagram', 'tiktok', 'linkedin', 'facebook', 'youtube'];
@@ -36,7 +15,8 @@ const BRAND_DESC_MAX = 250; // حوالي 4 أسطر
 
 function newBrandState() {
   return {
-    step: 'colors', q: 0, answers: {}, options: [], fromPhoto: false,
+    step: 'colors', q: 0, answers: {}, options: [], fromPhoto: false, review: false,
+    shown: {},        // الدوائر الظاهرة في سؤالي "لون تحبه" و"لون لا تريده"
     colors: null, style: 'minimal', fontIndex: 0,
     info: Object.fromEntries(['name', 'desc', ...BRAND_FIELDS].map((k) => [k, ''])),
     pages: null, pagesKey: '',
@@ -66,7 +46,11 @@ function renderBrand() {
   document.getElementById('brand-back').addEventListener('click', (e) => {
     if (b.step === 'colors' && !b.options.length && b.q === 0) return; // نترك الرابط يعمل (للواجهة)
     e.preventDefault();
-    if (b.step === 'colors') { if (b.options.length) b.options = []; else b.q--; }
+    if (b.step === 'colors') {
+      if (b.review) b.review = false;          // من مراجعة اللوحة إلى اللوحات الثلاث
+      else if (b.options.length) b.options = [];
+      else b.q--;
+    }
     else b.step = steps[current - 1];
     renderBrand();
   });
@@ -80,92 +64,199 @@ function renderBrand() {
 /* ---------- الخطوة 1: الألوان ---------- */
 function renderBrandColors() {
   const b = state.brand;
+  if (b.review) return renderBrandReview();
+  if (b.options.length) return renderBrandOptions();
   const body = document.getElementById('brand-body');
+  const q = BRAND_STEPS[b.q];
+  const total = BRAND_STEPS.length;
+  const picked = b.answers[q.key];
+  const isOn = (v) => (Array.isArray(picked) ? picked.includes(v) : picked === v);
 
-  // 3 لوحات جاهزة للاختيار
-  if (b.options.length) {
-    body.innerHTML = `
-      <h2 class="section-title">${t(b.fromPhoto ? 'brand.pickPhoto' : 'brand.pick')}</h2>
-      <div class="options-list">
-        ${b.options.map((colors, i) => `
-          <button type="button" class="option-card brand-option" data-pick="${i}">
-            <div class="option-strip">${colors.map((c) => `<i style="background:${c}"></i>`).join('')}</div>
-            <div class="option-info">
-              <p dir="ltr" class="brand-hexes">${colors.join('  ')}</p>
-              <span class="btn btn-small btn-primary">${t('options.choose')}</span>
-            </div>
-          </button>`).join('')}
-      </div>
-      <div class="actions"><button type="button" class="btn" id="brand-restart">${t('brand.restart')}</button></div>
-    `;
-    body.querySelectorAll('[data-pick]').forEach((btn) => btn.addEventListener('click', () => {
-      b.colors = b.options[Number(btn.dataset.pick)];
-      if (b.fromPhoto) b.style = detectStyle(b.colors);
-      b.fontIndex = 0;
-      b.step = 'font';
-      renderBrand();
-      window.scrollTo(0, 0);
-    }));
-    document.getElementById('brand-restart').addEventListener('click', () => {
-      state.brand = { ...newBrandState(), info: b.info };
-      renderBrand();
-    });
-    return;
+  // شكل الخيارات حسب نوع السؤال
+  let choices;
+  if (q.type === 'colors') {
+    choices = `
+      <div class="swatch-grid">
+        ${swatchesShown(b, q.key).map((c, i) => `
+          <div class="swatch-cell">
+            <button type="button" class="swatch-pick ${isOn(c) ? 'selected' : ''}" data-swatch="${i}" style="background:${c}"
+                    aria-pressed="${isOn(c)}" title="${t('famname.' + colorFamily(c))}"></button>
+            <small class="swatch-name">${t('famname.' + colorFamily(c))}</small>
+            <button type="button" class="swatch-skip" data-skip="${i}">${t('bq.skip')}</button>
+          </div>`).join('')}
+      </div>`;
+  } else {
+    choices = `
+      <div class="choice-chips">
+        ${q.options.map((opt) => `
+          <button type="button" class="choice-chip ${isOn(opt) ? 'selected' : ''}" data-value="${opt}"
+                  aria-pressed="${isOn(opt)}">${t('bq.' + q.key + '.' + opt)}</button>`).join('')}
+      </div>`;
   }
+  const multi = q.type !== 'single';
 
-  // سؤال واحد في كل مرة، وفوقه خيار الصورة
-  const q = BRAND_QUESTIONS[b.q];
   body.innerHTML = `
-    <section class="brand-photo">
-      <div>
-        <h2>${t('brand.photo.title')}</h2>
-        <p class="small-hint">${t('brand.photo.hint')}</p>
-      </div>
-      <div class="upload-buttons">
-        <label class="btn" for="brand-camera">${t('upload.camera')}</label>
-        <label class="btn" for="brand-file">${t('upload.pick')}</label>
-        <input type="file" id="brand-camera" accept="image/*" capture="environment" hidden>
-        <input type="file" id="brand-file" accept="image/*" hidden>
-      </div>
-    </section>
+    ${b.q === 0 ? `
+      <section class="brand-photo">
+        <div>
+          <h2>${t('brand.photo.title')}</h2>
+          <p class="small-hint">${t('brand.photo.hint')}</p>
+        </div>
+        <div class="upload-buttons">
+          <label class="btn" for="brand-camera">${t('upload.camera')}</label>
+          <label class="btn" for="brand-file">${t('upload.pick')}</label>
+          <input type="file" id="brand-camera" accept="image/*" capture="environment" hidden>
+          <input type="file" id="brand-file" accept="image/*" hidden>
+        </div>
+      </section>` : ''}
 
     <div class="quiz">
-      <p class="eyebrow">${t('brand.orAnswer')} · ${t('quiz.step', { n: b.q + 1, total: BRAND_QUESTIONS.length })}</p>
-      <div class="progress"><span style="width:${((b.q + 1) / BRAND_QUESTIONS.length) * 100}%"></span></div>
-      <h1>${t('brand.q.' + q.key)}</h1>
-      <div class="choice-chips">
-        ${Object.keys(q.options).map((opt) => `
-          <button type="button" class="choice-chip ${b.answers[q.key] === opt ? 'selected' : ''}" data-value="${opt}">${t('brand.q.' + q.key + '.' + opt)}</button>`).join('')}
+      <p class="eyebrow">${b.q === 0 ? t('brand.orAnswer') + ' · ' : ''}${t('quiz.step', { n: b.q + 1, total })}</p>
+      <div class="progress"><span style="width:${((b.q + 1) / total) * 100}%"></span></div>
+      <h1>${t('bq.' + q.key)}</h1>
+      <p class="small-hint">${t(multi ? 'bq.multiHint' : 'bq.singleHint')}</p>
+      ${choices}
+      <div class="quiz-nav">
+        ${b.q > 0 ? `<button type="button" class="btn btn-small" id="bq-prev"><span class="back-arrow" aria-hidden="true">←</span> ${t('quiz.prev')}</button>` : '<span></span>'}
+        ${multi ? `<button type="button" class="btn btn-primary" id="bq-next">${picked && picked.length ? t('brand.next') : t('bq.any')}</button>` : ''}
       </div>
     </div>
   `;
 
-  body.querySelectorAll('[data-value]').forEach((btn) => btn.addEventListener('click', () => {
-    b.answers[q.key] = btn.dataset.value;
-    if (b.q < BRAND_QUESTIONS.length - 1) b.q++;
-    else makeBrandOptions();
+  const next = () => {
+    if (b.q < total - 1) b.q++;
+    else {
+      const made = brandOptionsFromAnswers(b.answers);
+      b.options = made.options;
+      b.style = made.style;
+      b.fromPhoto = false;
+    }
     renderBrand();
     window.scrollTo(0, 0);
+  };
+
+  // جواب واحد: نحفظ وننتقل. أكثر من جواب: نضيف أو نزيل (بلا حد)
+  body.querySelectorAll('[data-value]').forEach((btn) => btn.addEventListener('click', () => {
+    const v = btn.dataset.value;
+    if (!multi) { b.answers[q.key] = v; next(); return; }
+    const list = b.answers[q.key] || [];
+    b.answers[q.key] = list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
+    renderBrandColors();
   }));
 
-  ['brand-camera', 'brand-file'].forEach((id) => {
-    document.getElementById(id).addEventListener('change', (e) => {
-      if (e.target.files[0]) brandFromPhoto(e.target.files[0]);
+  // الدوائر: الضغط يختار، و"بدّل" يزحلق لوناً جديداً مكانه
+  body.querySelectorAll('[data-swatch]').forEach((btn) => btn.addEventListener('click', () => {
+    const c = swatchesShown(b, q.key)[Number(btn.dataset.swatch)];
+    const list = b.answers[q.key] || [];
+    b.answers[q.key] = list.includes(c) ? list.filter((x) => x !== c) : [...list, c];
+    renderBrandColors();
+  }));
+  body.querySelectorAll('[data-skip]').forEach((btn) => btn.addEventListener('click', () => {
+    const i = Number(btn.dataset.skip);
+    const shown = swatchesShown(b, q.key);
+    const old = shown[i];
+    const fresh = nextSwatch(shown);
+    const cell = btn.closest('.swatch-cell');
+    slideSwap(cell.querySelector('.swatch-pick'), () => {
+      shown[i] = fresh;
+      b.answers[q.key] = (b.answers[q.key] || []).filter((x) => x !== old); // المُبدَّل لم يعد مختاراً
+      const pick = cell.querySelector('.swatch-pick');
+      pick.style.background = fresh;
+      pick.classList.remove('selected');
+      pick.title = t('famname.' + colorFamily(fresh));
+      cell.querySelector('.swatch-name').textContent = t('famname.' + colorFamily(fresh));
     });
+  }));
+
+  const nextBtn = document.getElementById('bq-next');
+  if (nextBtn) nextBtn.addEventListener('click', next);
+  const prev = document.getElementById('bq-prev');
+  if (prev) prev.addEventListener('click', () => { b.q--; renderBrand(); });
+
+  ['brand-camera', 'brand-file'].forEach((id) => {
+    const input = document.getElementById(id);
+    if (input) input.addEventListener('change', (e) => { if (e.target.files[0]) brandFromPhoto(e.target.files[0]); });
   });
 }
 
-/* يصنع 3 لوحات من إجابات الأسئلة */
-function makeBrandOptions() {
+/* 3 لوحات للاختيار */
+function renderBrandOptions() {
   const b = state.brand;
-  const p = { mood: 'calm', style: 'minimal' };
-  BRAND_QUESTIONS.forEach((q) => Object.assign(p, q.options[b.answers[q.key]] || {}));
-  const temp = state.refine.temp; // زر حار/بارد في الأعلى يُحترم هنا أيضاً
-  const refine = { ...defaultRefine(), temp, feel: p.feel && feelingsFor(temp).includes(p.feel) ? p.feel : '' };
-  b.style = p.style;
-  b.fromPhoto = false;
-  b.options = generateFromAnswers({ industry: p.ind, mood: p.mood, style: p.style }, refine)
-    .map((o) => applyRefine(o.colors, refine, [], { skipFeeling: true, style: p.style }).slice(0, 5));
+  const body = document.getElementById('brand-body');
+  body.innerHTML = `
+    <h2 class="section-title">${t(b.fromPhoto ? 'brand.pickPhoto' : 'brand.pick')}</h2>
+    <div class="options-list">
+      ${b.options.map((colors, i) => `
+        <button type="button" class="option-card brand-option" data-pick="${i}">
+          <div class="option-strip">${colors.map((c) => `<i style="background:${c}"></i>`).join('')}</div>
+          <div class="option-info">
+            <p dir="ltr" class="brand-hexes">${colors.join('  ')}</p>
+            <span class="btn btn-small btn-primary">${t('options.choose')}</span>
+          </div>
+        </button>`).join('')}
+    </div>
+    <div class="actions">
+      <button type="button" class="btn" id="brand-more">${t('options.more')}</button>
+      <button type="button" class="btn" id="brand-restart">${t('brand.restart')}</button>
+    </div>
+  `;
+  body.querySelectorAll('[data-pick]').forEach((btn) => btn.addEventListener('click', () => {
+    b.colors = [...b.options[Number(btn.dataset.pick)]];
+    if (b.fromPhoto) b.style = detectStyle(b.colors);
+    b.review = true;
+    renderBrand();
+    window.scrollTo(0, 0);
+  }));
+  document.getElementById('brand-more').addEventListener('click', () => {
+    if (!b.fromPhoto) b.options = brandOptionsFromAnswers(b.answers).options;
+    renderBrandOptions();
+  });
+  document.getElementById('brand-restart').addEventListener('click', () => {
+    state.brand = { ...newBrandState(), info: b.info };
+    renderBrand();
+  });
+}
+
+/* مراجعة اللوحة: كل لون له "بدّل" (ينزلق للأعلى ويأتي لون آخر) */
+function renderBrandReview() {
+  const b = state.brand;
+  const avoid = (b.answers.avoid || []).map(colorFamily);
+  const body = document.getElementById('brand-body');
+  const col = (c, i) => `
+    <div class="review-col">
+      <div class="review-swatch" style="background:${c}; color:${isLight(c) ? '#1a1a1a' : '#fff'}">
+        <span class="strip-role">${roleName(i, c)}</span>
+        <strong>${colorName(c)}</strong>
+        <code dir="ltr">${c}</code>
+      </div>
+      <button type="button" class="btn btn-small swatch-skip" data-swap="${i}">${t('bq.skip')}</button>
+    </div>`;
+  body.innerHTML = `
+    <h2 class="section-title">${t('bq.review')}</h2>
+    <p class="small-hint">${t('bq.reviewHint')}</p>
+    <div class="review-strip">${b.colors.map(col).join('')}</div>
+    <div class="actions"><button type="button" class="btn btn-primary" id="brand-next">${t('brand.next')}</button></div>
+  `;
+  body.querySelectorAll('[data-swap]').forEach((btn) => btn.addEventListener('click', () => {
+    const i = Number(btn.dataset.swap);
+    let fresh = regenerateColor(b.colors, i);
+    fresh = avoidFamilies(fresh, avoid);
+    const sw = btn.closest('.review-col').querySelector('.review-swatch');
+    slideSwap(sw, () => {
+      b.colors[i] = fresh;
+      sw.style.background = fresh;
+      sw.style.color = isLight(fresh) ? '#1a1a1a' : '#fff';
+      sw.querySelector('strong').textContent = colorName(fresh);
+      sw.querySelector('code').textContent = fresh;
+      sw.querySelector('.strip-role').textContent = roleName(i, fresh);
+    });
+  }));
+  document.getElementById('brand-next').addEventListener('click', () => {
+    b.fontIndex = 0;
+    b.step = 'font';
+    renderBrand();
+    window.scrollTo(0, 0);
+  });
 }
 
 /* من صورة: نستخرج ألوانها (داخل الجهاز فقط) ونقترح 3 لوحات منها */
@@ -266,7 +357,9 @@ function renderBrandInfo() {
 function brandKit() {
   const b = state.brand;
   const info = Object.fromEntries(Object.entries(b.info).map(([k, v]) => [k, v.trim()]));
-  return { colors: b.colors, style: b.style, pair: fontPairsFor(b.style)[b.fontIndex], info, answers: b.answers, lang: currentLang };
+  // شكل الألوان: صافية / تدرج لونين / تدرج 3 ألوان / شفافة (يمكن أكثر من واحد)
+  const effects = (b.answers.look && b.answers.look.length) ? b.answers.look : ['solid'];
+  return { colors: b.colors, style: b.style, pair: fontPairsFor(b.style)[b.fontIndex], info, answers: b.answers, effects, lang: currentLang };
 }
 
 /* ---------- الخطوة 4: دليل الهوية ---------- */
@@ -338,10 +431,18 @@ function brandPrompts(kit) {
   const desc = kit.info.desc.replace(/\s+/g, ' ').replace(/[.。!؟?]+$/, '');
   const about = desc ? ` The brand is about: ${desc}.` : '';
   // text = الأمر الكامل للنسخ. short = نفس الأمر بدون الوصف (للصفحة المطبوعة حتى تتسع كل الأوامر)
+  // شكل الألوان الذي اختاره (تدرج، شفافية...)
+  const lookWords = {
+    grad2: `smooth two-color gradients from ${colorPhrase(main)} to ${colorPhrase(accent)}`,
+    grad3: `smooth three-color gradients of ${colorPhrase(main)}, ${colorPhrase(accent)} and ${colorPhrase(kit.colors[4] || bg)}`,
+    glass: 'soft semi-transparent overlapping color shapes behind the content (glass effect)',
+  };
+  const looks = (kit.effects || []).map((e) => lookWords[e]).filter(Boolean);
+  const look = looks.length ? `, using ${looks.join(' and ')}` : '';
   const make = (key, body) => ({
     key,
-    text: `${body}, ${style}.${about} ${palette} High detail, professional design, no watermark.`,
-    short: `${body}, ${style}. ${palette}`,
+    text: `${body}${look}, ${style}.${about} ${palette} High detail, professional design, no watermark.`,
+    short: `${body}${look}, ${style}. ${palette}`,
   });
   return [
     make('logo', `Professional vector logo design for the brand ${name}, a simple memorable symbol in ${colorPhrase(main)} with a detail in ${colorPhrase(accent)} next to the wordmark in ${colorPhrase(dark)}, on ${an(colorPhrase(bg))} background, ${font}`),
