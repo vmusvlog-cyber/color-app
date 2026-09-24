@@ -175,6 +175,15 @@ function renderHome() {
 
     <!-- بطاقات بأحجام مختلفة (مثل لوحة الألوان في صورة صاحب التطبيق). الكتابة فقط، بدون أيقونات -->
     <div class="audience-grid">
+      <!-- "ارفع صورة": من أقوى الخاصيات، لذلك بطاقة عريضة في أول الواجهة -->
+      <a class="audience-card card-upload" href="#/upload/beginner">
+        <span class="upload-stripe" aria-hidden="true">${HOME_COLORS.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+        <span class="upload-text">
+          <h2>${t('home.upload.title')}</h2>
+          <p>${t('home.upload.desc')}</p>
+        </span>
+        <span class="btn btn-primary upload-go">${t('home.upload.go')}</span>
+      </a>
       ${AUDIENCES.map((a) => `
         <a class="audience-card card-${a.id}" href="#/methods/${a.id}">
           <h2>${t('aud.' + a.id + '.title')}</h2>

@@ -16,6 +16,9 @@ const TRANSLATIONS = {
 
     'home.title': 'ألوان متناسقة بلمسة واحدة',
     'home.subtitle': 'اختر ما يناسبك، ونحن نساعدك في الباقي. لا تحتاج أي خبرة في التصميم.',
+    'home.upload.title': 'ألوان من صورة',
+    'home.upload.desc': 'صوّر أي شيء أو ارفع صورة، ونعطيك ألوانها فوراً.',
+    'home.upload.go': 'ارفع صورة',
     'home.gallery.title': 'المعرض',
     'home.gallery.desc': 'لوحات شاركها الناس لتستلهم منها.',
 
@@ -544,6 +547,9 @@ const TRANSLATIONS = {
 
     'home.title': 'Harmonious colors in one tap',
     'home.subtitle': 'Pick what fits you and we will handle the rest. No design experience needed.',
+    'home.upload.title': 'Colors from a photo',
+    'home.upload.desc': 'Snap anything or upload an image, and get its colors instantly.',
+    'home.upload.go': 'Upload image',
     'home.gallery.title': 'Gallery',
     'home.gallery.desc': 'Palettes people shared, for inspiration.',
 

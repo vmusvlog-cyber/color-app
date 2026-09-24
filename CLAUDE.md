@@ -132,6 +132,8 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       button in the top bar (all screens) → #/upload/<current audience>; removed from the start
       methods (now 3: describe, ready, free). The upload page has "Take a photo" (capture=
       environment) and "Choose from your device"; back goes home; strip shows HEX, no percentages.
+      Home shows it as a big white full-width card FIRST in the bento ("Colors from a photo",
+      6-color stripe, green button); the top-bar upload button is hidden on home only.
 - [ ] Phase 6
 
 ---
