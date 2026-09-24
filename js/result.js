@@ -18,6 +18,8 @@ function renderResult(audience, params) {
   // shown  = ما نعرضه فعلاً بعد تطبيق "نسخة داكنة" أو "للطباعة"
   const shown = applyView(colors);
   const weights = ratioWeights(colors.length);
+  syncColorHistory(colors); // سجل الألوان السابقة لكل بطاقة (للسهمين)
+  const hist = state.colorHistory; // (ليس history — هذا الاسم يستخدمه المتصفح)
   const title = params.p ? t('pal.' + params.p) : t('result.title');
   const style = STYLES.includes(params.s) ? params.s : detectStyle(colors);
   const industry = params.ind && INDUSTRY_COLORS[params.ind] ? params.ind : null;
@@ -61,7 +63,20 @@ function renderResult(audience, params) {
             <button type="button" class="hex-btn" data-hex="${c}" dir="ltr">${c}</button>
             ${state.view.print ? `<span class="cmyk" dir="ltr">${cmykText(c)}</span>` : ''}
             <span class="role">${roleName(i)}</span>
-            <button type="button" class="regen-btn" data-index="${i}">↻ ${t('result.regenerate')}</button>
+            <!-- سهمان: السابق يرجعك للون قبله، والتالي يعطيك لوناً آخر -->
+            <div class="regen-nav">
+              <button type="button" class="regen-arrow" data-prev="${i}" ${hist.pos[i] === 0 ? 'disabled' : ''}
+                      aria-label="${t('result.prevColor')}" title="${t('result.prevColor')}">
+                <span class="back-arrow" aria-hidden="true">←</span>
+              </button>
+              <span class="regen-count" dir="ltr" ${hist.lists[i].length > 1 ? '' : 'style="visibility:hidden"'}>
+                ${hist.pos[i] + 1}/${hist.lists[i].length}
+              </span>
+              <button type="button" class="regen-arrow" data-next="${i}"
+                      aria-label="${t('result.regenerate')}" title="${t('result.regenerate')}">
+                <span class="fwd-arrow" aria-hidden="true">→</span>
+              </button>
+            </div>
           </figcaption>
         </figure>
       `).join('')}
@@ -195,11 +210,25 @@ function renderResult(audience, params) {
     });
   });
 
-  // زر "لون آخر"
-  app.querySelectorAll('.regen-btn').forEach((btn) => {
+  // السهم التالي: إن كنا رجعنا للخلف نتقدم للون الذي رأيناه، وإلا نصنع لوناً جديداً
+  app.querySelectorAll('[data-next]').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const i = Number(btn.dataset.index);
-      colors[i] = regenerateColor(colors, i);
+      const i = Number(btn.dataset.next);
+      const list = hist.lists[i];
+      if (hist.pos[i] === list.length - 1) list.push(regenerateColor(colors, i));
+      hist.pos[i]++;
+      colors[i] = list[hist.pos[i]];
+      updateColors(colors);
+    });
+  });
+
+  // السهم السابق: يرجعنا للون الذي كان قبله
+  app.querySelectorAll('[data-prev]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const i = Number(btn.dataset.prev);
+      if (hist.pos[i] === 0) return;
+      hist.pos[i]--;
+      colors[i] = hist.lists[i][hist.pos[i]];
       updateColors(colors);
     });
   });
@@ -411,6 +440,28 @@ function renderPreviews(colors, style) {
       <figcaption>${t('preview.web')}</figcaption>
     </figure>
   `;
+}
+
+/* ---------- سجل الألوان (للسهمين تحت كل بطاقة) ----------
+   لكل بطاقة قائمة بالألوان التي ظهرت فيها، ومكاننا الحالي في القائمة.
+   إذا فتح المستخدم لوحة مختلفة تماماً نبدأ سجلاً جديداً. وإذا تغيّر لون
+   بطريقة أخرى (مثل زر المنافسين أو الثقافة) نضيفه للسجل حتى يمكن الرجوع عنه. */
+function syncColorHistory(colors) {
+  const h = state.colorHistory;
+  const sameSize = h && h.lists.length === colors.length;
+  const matches = sameSize ? colors.filter((c, i) => h.lists[i][h.pos[i]] === c).length : 0;
+
+  if (!sameSize || matches < colors.length / 2) {
+    state.colorHistory = { lists: colors.map((c) => [c]), pos: colors.map(() => 0) };
+    return;
+  }
+  colors.forEach((c, i) => {
+    if (h.lists[i][h.pos[i]] !== c) {
+      h.lists[i] = h.lists[i].slice(0, h.pos[i] + 1); // نحذف الألوان "الأمامية" القديمة
+      h.lists[i].push(c);
+      h.pos[i]++;
+    }
+  });
 }
 
 /* ---------- المشاركة ---------- */

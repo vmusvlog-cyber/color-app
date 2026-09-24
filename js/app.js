@@ -29,6 +29,7 @@ const state = {
   fontStyle: null,                // الأسلوب الذي اختير له زوج الخطوط
   projectName: '',                // اسم المشروع في المعاينات
   whyOpen: false,                 // هل شرح "لماذا هذه الألوان؟" مفتوح
+  colorHistory: null,             // الألوان السابقة لكل بطاقة في النتيجة (للسهمين)
   // المرحلة 3
   upload: null,                   // الصورة المرفوعة وألوانها
   view: { gradients: false, dark: false, print: false }, // خيارات العرض

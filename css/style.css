@@ -228,15 +228,23 @@ h2 { font-size: 1.1rem; font-weight: 700; }
 }
 .hex-btn:hover { background: var(--surface); color: var(--text); }
 .role { font-size: .8rem; color: var(--muted); }
-.regen-btn {
-  margin-top: 8px;
+/* السهمان تحت كل بطاقة: السابق ← → التالي */
+.regen-nav { display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 8px; }
+.regen-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
   border: 1px solid var(--line);
   background: var(--bg);
-  border-radius: 999px;
-  padding: 4px 12px;
-  font-size: .85rem;
+  border-radius: 50%;
+  font-size: 1rem;
+  font-weight: 700;
 }
-.regen-btn:hover { background: var(--surface); }
+.regen-arrow:hover:not(:disabled) { background: var(--surface); border-color: #CFCFD4; }
+.regen-arrow:disabled { opacity: .3; cursor: default; }
+.regen-count { min-width: 30px; text-align: center; font-size: .78rem; color: var(--muted); font-variant-numeric: tabular-nums; }
 
 .ratio-box {
   max-width: 640px;
