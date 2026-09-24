@@ -112,7 +112,8 @@ function renderTopbar() {
       ${t('app.name')}
     </a>
     <nav class="top-actions">
-      <a class="lang-btn" href="#/saved">♡ ${t('nav.saved')}${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
+      <a class="lang-btn" href="#/gallery">🖼 <span class="nav-text">${t('nav.gallery')}</span></a>
+      <a class="lang-btn" href="#/saved">♡ <span class="nav-text">${t('nav.saved')}</span>${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
       <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
     </nav>
   `;
@@ -474,6 +475,8 @@ function deleteSelected() {
    الموزّع: يقرأ الرابط ويعرض الشاشة المناسبة
    ========================================================================= */
 function render(keepScroll) {
+  // عند الانتقال لشاشة أخرى نغلق أي نافذة مفتوحة (التحميل أو تسجيل الدخول)
+  if (!keepScroll) { closeDownload(); closeSignIn(); }
   applyLanguage();
   renderTopbar();
   const { screen, audience, params } = parseHash();
@@ -488,6 +491,7 @@ function render(keepScroll) {
   else if (screen === 'options') renderOptions(audience, params);
   else if (screen === 'upload') renderUpload(audience);
   else if (screen === 'saved') renderSaved();
+  else if (screen === 'gallery') renderGallery();
   else renderHome();
 
   if (!keepScroll) window.scrollTo(0, 0);
@@ -495,4 +499,34 @@ function render(keepScroll) {
 
 // نعيد الرسم كلما تغيّر الرابط (مثلاً عند الضغط على بطاقة أو زر الرجوع في المتصفح)
 window.addEventListener('hashchange', () => render());
-render();
+startApp();
+
+/*
+  تشغيل التطبيق:
+  1) نجهّز الاتصال بقاعدة البيانات (إن كانت المفاتيح موجودة في config.js)
+  2) إذا رجع المستخدم من رابط البريد، ننتظر حتى يكتمل تسجيل دخوله
+     ثم نعيده للصفحة التي كان فيها
+*/
+async function startApp() {
+  const hash = location.hash; // نقرؤه قبل initCloud، لأن مكتبة Supabase تمسح بيانات الدخول من الرابط
+  initCloud();
+  const fromEmail = hash.includes('access_token=');
+  const linkError = hash.includes('error_description=') || hash.includes('error=');
+
+  if (fromEmail || linkError) {
+    applyLanguage();
+    renderTopbar();
+    app.innerHTML = `<p class="zone-empty">${t('auth.signingIn')}</p>`;
+  }
+  await cloudReady();
+
+  if (fromEmail || linkError) {
+    const back = loadData('returnTo', null) || '#/';
+    saveData('returnTo', null);
+    // نستبدل الرابط الطويل (فيه بيانات الدخول) بالصفحة التي كان فيها المستخدم
+    history.replaceState(null, '', location.pathname + location.search + back);
+    if (isSignedIn()) setTimeout(() => toast(t('auth.welcome', { name: userName() })), 300);
+    else toast(t('auth.linkError'));
+  }
+  render();
+}

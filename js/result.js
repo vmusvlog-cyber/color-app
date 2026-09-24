@@ -80,6 +80,7 @@ function renderResult(audience, params) {
       <button type="button" class="btn btn-primary" id="download-btn">⬇ ${t('action.download')}</button>
       <button type="button" class="btn" id="save-btn">♡ ${t('action.save')}</button>
       <button type="button" class="btn" id="share-btn">🔗 ${t('action.share')}</button>
+      ${cloudEnabled() ? `<button type="button" class="btn" id="publish-btn">📢 ${t('action.publish')}</button>` : ''}
     </div>
 
     <!-- 1ب) خيارات العرض -->
@@ -148,11 +149,36 @@ function renderResult(audience, params) {
   document.getElementById('download-btn').addEventListener('click', () => openDownload(shown, title));
 
   // حفظ في "لوحاتي" على هذا الجهاز
-  document.getElementById('save-btn').addEventListener('click', () => {
-    savePalette({ colors: shown, title: params.p ? params.p : null, style, audience: audience.id });
-    renderTopbar(); // لتحديث العدد بجانب "لوحاتي"
-    toast(t('action.saved'));
+  // بيانات اللوحة كما نحفظها أو ننشرها
+  const paletteData = { colors: shown, title: params.p || null, style, industry, audience: audience.id };
+
+  // حفظ: في الحساب إن كان مسجلاً، وإلا في هذا الجهاز
+  document.getElementById('save-btn').addEventListener('click', async () => {
+    try {
+      if (isSignedIn()) await cloudSavePalette(paletteData);
+      else savePalette(paletteData);
+      renderTopbar(); // لتحديث العدد بجانب "لوحاتي"
+      toast(t('action.saved'));
+    } catch (e) {
+      toast(t('cloud.error'));
+    }
   });
+
+  // نشر في المعرض العام (يحتاج تسجيل دخول)
+  const publishBtn = document.getElementById('publish-btn');
+  if (publishBtn) {
+    publishBtn.addEventListener('click', async () => {
+      if (!isSignedIn()) { openSignIn(t('auth.forPublish')); return; }
+      publishBtn.disabled = true;
+      try {
+        await publishPalette(paletteData);
+        toast(t('action.published'));
+      } catch (e) {
+        toast(t('cloud.error'));
+        publishBtn.disabled = false;
+      }
+    });
+  }
 
   // مشاركة الرابط: في الجوال تظهر قائمة المشاركة، وإلا ننسخ الرابط
   document.getElementById('share-btn').addEventListener('click', () => {
@@ -399,48 +425,6 @@ function sharePaletteLink(url, title) {
   } else {
     copy();
   }
-}
-
-/* ---------- شاشة "لوحاتي" ---------- */
-function renderSaved() {
-  const list = getSavedPalettes();
-  app.innerHTML = `
-    ${backLink('#/')}
-    <header class="page-head">
-      <h1>${t('saved.title')}</h1>
-      <p class="lead">${t('saved.subtitle')}</p>
-    </header>
-    ${list.length === 0 ? `<p class="zone-empty">${t('saved.empty')}</p>` : `
-      <div class="palette-grid">
-        ${list.map((p) => {
-          const name = p.title ? t('pal.' + p.title) : t('saved.untitled');
-          const date = new Date(p.date).toLocaleDateString(currentLang === 'ar' ? 'ar' : 'en');
-          const href = `#/result/${p.audience || 'beginner'}?c=${colorsToParam(p.colors)}&s=${p.style}`;
-          return `
-            <div class="palette-tile saved-tile">
-              <a class="tile-strip" href="${href}">
-                ${p.colors.map((c) => `<i style="background:${c}"></i>`).join('')}
-              </a>
-              <div class="tile-name saved-row">
-                <span><strong>${name}</strong><small>${date}</small></span>
-                <span class="saved-actions">
-                  <a class="btn btn-small" href="${href}">${t('saved.open')}</a>
-                  <button type="button" class="btn btn-small btn-danger" data-delete="${p.id}">${t('saved.delete')}</button>
-                </span>
-              </div>
-            </div>`;
-        }).join('')}
-      </div>`}
-  `;
-
-  app.querySelectorAll('[data-delete]').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      deletePalette(Number(btn.dataset.delete));
-      toast(t('saved.deleted'));
-      renderTopbar();
-      renderSaved();
-    });
-  });
 }
 
 /* ---------- خيارات العرض ---------- */

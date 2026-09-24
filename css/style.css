@@ -747,6 +747,30 @@ body.no-scroll { overflow: hidden; }
 }
 
 /* =========================================================================
+   المرحلة 5: المعرض والحسابات
+   ========================================================================= */
+.filters { display: grid; gap: 12px; margin-bottom: 24px; }
+.filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.filter-label { min-width: 64px; font-weight: 700; color: var(--muted); font-size: .9rem; }
+.like-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 999px;
+  padding: 4px 12px;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.like-btn:hover { border-color: #E0526A; color: #E0526A; }
+.like-btn.liked { background: #FDECEF; border-color: #E0526A; color: #C8233F; }
+.account-row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin: 14px 0 0; color: var(--muted); }
+@media (max-width: 560px) {
+  .nav-text { display: none; }   /* على الجوال: أيقونات فقط في الشريط العلوي */
+}
+
+/* =========================================================================
    الشاشات الصغيرة (آيباد ثم جوال)
    ========================================================================= */
 @media (max-width: 900px) {

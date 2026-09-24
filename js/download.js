@@ -33,7 +33,7 @@ function openDownload(colors, title) {
   document.body.classList.add('no-scroll');
 
   // نبدأ من أول خطوة لم ينجزها المستخدم بعد
-  if (!getAccount()) renderDlSignup();
+  if (!getAccount() && !isSignedIn()) renderDlSignup();
   else if (!hasGivenFeedback()) renderDlFeedback();
   else renderDlFormat();
 }
@@ -85,6 +85,11 @@ function renderDlSignup() {
     // فحص بسيط لشكل البريد: شيء@شيء.شيء
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { error.textContent = t('dl.badEmail'); return; }
     setAccount(name, email);
+    // إذا كانت قاعدة البيانات متصلة، نرسل أيضاً رابط دخول لإنشاء حساب حقيقي
+    // (لا ننتظره: المستخدم يكمل التحميل مباشرة)
+    if (cloudEnabled()) {
+      sendMagicLink(email, name).then(() => { dl.linkSent = true; }).catch(() => {});
+    }
     if (!hasGivenFeedback()) renderDlFeedback(); else renderDlFormat();
   });
 }
@@ -120,16 +125,18 @@ function renderDlFeedback() {
     const allAnswered = FEEDBACK_QUESTIONS.every((q) => dl.answers[q]);
     if (!allAnswered) { document.getElementById('dl-error').textContent = t('dl.answerAll'); return; }
     addFeedback(dl.answers);
+    sendFeedback(dl.answers).catch(() => {}); // نرسل الرأي لقاعدة البيانات (إن كانت متصلة)
     renderDlFormat();
   });
 }
 
 /* ---------- الخطوة 3: اختيار نوع الملف ---------- */
 function renderDlFormat(done) {
-  const account = getAccount();
+  const account = isSignedIn() ? { name: userName() } : getAccount();
   dlFrame(3, `
     <h2 id="dl-heading">${done ? t('dl.done') : t('dl.formatTitle')}</h2>
     ${account ? `<p class="small-hint">${t('dl.hello', { name: escapeHtml(account.name) })}</p>` : ''}
+    ${dl.linkSent && !isSignedIn() ? `<p class="small-hint">✉️ ${t('dl.linkSent')}</p>` : ''}
     ${done && dl.lastPng ? `
       <img src="${dl.lastPng}" alt="${escapeHtml(dl.title)}" class="dl-preview">
       <p class="small-hint">${t('dl.fallback')}</p>` : ''}

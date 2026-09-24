@@ -20,6 +20,11 @@ The owner is a complete beginner with no coding experience.
 - **Fonts:** Google Fonts — Tajawal (Arabic) and Inter (English) for the UI; font pairings
   for results are loaded on demand from `js/fonts.js`.
 - **Images:** mood and style pictures are drawn in code (SVG), not photos (owner agreed).
+- **Backend (Phase 5, owner agreed):** Supabase (free tier) with magic-link email sign-in.
+  supabase-js is loaded from jsDelivr (pinned). If keys are empty or the library fails to
+  load, the app runs in local-only mode. Hosting: Netlify connected to the GitHub branch.
+  The claude.ai preview cannot reach Supabase (its CSP blocks it), so test cloud features
+  on Netlify.
 
 ## File structure
 ```
@@ -40,8 +45,13 @@ js/variants.js    Dark version, print-safe version + CMYK, gradients, culture no
 js/storage.js     localStorage helpers: saved palettes, simple account, feedback answers
 js/download.js    Download window (sign-up → 3 feedback questions → PNG/PDF), canvas
                   drawing of the cards, and a tiny PDF writer (no external library)
+js/config.js      Supabase URL + public anon key (empty = local-only mode)
+js/cloud.js       All Supabase calls: magic-link auth, palettes, gallery, likes, feedback
+js/gallery.js     Gallery screen (#/gallery, filters + likes), sign-in modal, My palettes
 js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
-js/app.js         State, home/methods/ready/free screens, navigation (router)
+js/app.js         State, home/methods/ready/free screens, navigation (router), startApp
+supabase/schema.sql  Tables + Row Level Security (run once in Supabase SQL Editor)
+SETUP-SUPABASE.md    Owner's Arabic step-by-step guide: Supabase + Netlify + keys
 ```
 
 ## Phase status
@@ -55,7 +65,10 @@ js/app.js         State, home/methods/ready/free screens, navigation (router)
       questions asked once per device, Save to "My palettes" (#/saved), Share link.
       Account, feedback and saved palettes are stored in localStorage only for now;
       Phase 5 moves them to a real server/database.
-- [ ] Phase 5
+- [x] Phase 5: Public gallery (filters: style, field; sort: newest/most liked; likes),
+      publish to gallery, account palettes (local ones migrate on first sign-in), feedback
+      sent to the `feedback` table (owner reads `feedback_readable`). Schema + RLS tested on
+      local PostgreSQL; app tested against a mocked Supabase API with the real supabase-js.
 - [ ] Phase 6
 
 ---
