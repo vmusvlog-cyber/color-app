@@ -116,6 +116,8 @@ function renderTopbar() {
             ${t('temp.' + v)}
           </button>`).join('')}
       </span>
+      <!-- "ارفع صورة" صارت خاصية مستقلة هنا (لم تعد داخل طرق البدء) -->
+      <a class="lang-btn" href="#/upload/${parseHash().audience.id}">${t('nav.upload')}</a>
       <a class="lang-btn" href="#/gallery">${t('nav.gallery')}</a>
       <a class="lang-btn" href="#/saved">${t('nav.saved')}${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
       <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
@@ -196,7 +198,6 @@ const HOME_COLORS = ['#FFC926', '#F3E8CC', '#F96015', '#D52518', '#18542A', '#9A
    ========================================================================= */
 function renderMethods(audience) {
   const methods = [
-    { id: 'upload',   soon: false },
     { id: 'describe', soon: false },
     { id: 'ready',    soon: false },
     { id: 'free',     soon: false },

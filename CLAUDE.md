@@ -128,6 +128,10 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       page into a "Fonts" button next to Download/Save/Share that opens a modal with 6 pairings
       (fontPairsFor: 3 for the style + 3 "also try" from other styles), each sample drawn in the
       palette's own colors; the chosen pairing feeds the prompts.
+- [x] Extra (owner's 3 answers): "Upload image" is now a standalone feature: an "ارفع صورة"
+      button in the top bar (all screens) → #/upload/<current audience>; removed from the start
+      methods (now 3: describe, ready, free). The upload page has "Take a photo" (capture=
+      environment) and "Choose from your device"; back goes home; strip shows HEX, no percentages.
 - [ ] Phase 6
 
 ---

@@ -279,6 +279,8 @@ const TRANSLATIONS = {
     'upload.subtitle': 'نستخرج أبرز الألوان من صورتك داخل جهازك، ولا نرفعها لأي مكان.',
     'upload.drop': 'اضغط لاختيار صورة، أو اسحبها إلى هنا',
     'upload.change': 'اختر صورة أخرى',
+    'upload.camera': 'التقط صورة بالكاميرا',
+    'upload.pick': 'اختر صورة من جهازك',
     'upload.working': 'نحلل الألوان...',
     'upload.error': 'لم نستطع قراءة هذه الصورة. جرّب صورة أخرى (JPG أو PNG).',
     'upload.found': 'الألوان التي وجدناها',
@@ -384,6 +386,7 @@ const TRANSLATIONS = {
 
     /* ===== المرحلة 5: المعرض والحسابات ===== */
     'nav.gallery': 'المعرض',
+    'nav.upload': 'ارفع صورة',
     'gallery.title': 'معرض اللوحات',
     'gallery.subtitle': 'لوحات شاركها الناس. اضغط على أي لوحة لتراها بالتفصيل.',
     'gallery.all': 'الكل',
@@ -797,6 +800,8 @@ const TRANSLATIONS = {
     'upload.subtitle': 'We pull the main colors from your image right on your device. It is never uploaded anywhere.',
     'upload.drop': 'Tap to choose an image, or drop it here',
     'upload.change': 'Choose another image',
+    'upload.camera': 'Take a photo',
+    'upload.pick': 'Choose from your device',
     'upload.working': 'Reading the colors...',
     'upload.error': 'We could not read this image. Try another one (JPG or PNG).',
     'upload.found': 'Colors we found',
@@ -900,6 +905,7 @@ const TRANSLATIONS = {
 
     /* ===== Phase 5: gallery and accounts ===== */
     'nav.gallery': 'Gallery',
+    'nav.upload': 'Upload image',
     'gallery.title': 'Palette gallery',
     'gallery.subtitle': 'Palettes shared by people. Tap any palette to see it in detail.',
     'gallery.all': 'All',

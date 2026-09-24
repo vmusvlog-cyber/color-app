@@ -1173,3 +1173,13 @@ html[dir="rtl"] .page-head h1::after, html[dir="rtl"] .section-title::after { tr
 .tdemo-face i:first-child { left: 22px; }
 .tdemo-face i:nth-child(2) { right: 22px; }
 .tdemo-face b { position: absolute; left: 24px; right: 24px; bottom: 18px; height: 14px; border: 3px solid var(--c); border-top: 0; border-radius: 0 0 20px 20px; }
+
+/* أزرار رفع الصورة: الكاميرا أو من الجهاز */
+.upload-buttons { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 12px; }
+.upload-buttons .btn { cursor: pointer; }
+@media (max-width: 420px) {
+  /* شاشات الجوال الصغيرة: أزرار الشريط العلوي أصغر حتى تكفيها سطر واحد تحت الاسم */
+  .top-actions { gap: 3px; }
+  .top-actions .lang-btn { padding: 4px 7px; font-size: .72rem; }
+  .temp-switch button { padding: 3px 6px; font-size: .72rem; }
+}

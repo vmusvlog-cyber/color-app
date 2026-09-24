@@ -1,5 +1,5 @@
 /* =========================================================================
-   image.js — طريقة البدء "ارفع صورة"
+   image.js — خاصية "ارفع صورة" (زر مستقل في الشريط العلوي)
    كل شيء يحدث داخل المتصفح: الصورة لا تُرسل لأي خادم.
 
    كيف نستخرج الألوان؟ بطريقة اسمها k-means:
@@ -19,7 +19,7 @@ function renderUpload(audience) {
   const up = state.upload; // { src, colors: [{hex, share}] } أو null
 
   app.innerHTML = `
-    ${backLink('#/methods/' + audience.id)}
+    ${backLink('#/')}
     <header class="page-head">
       <h1>${t('upload.title')}</h1>
       <p class="lead">${t('upload.subtitle')}</p>
@@ -32,13 +32,21 @@ function renderUpload(audience) {
         : `<span>${t('upload.drop')}</span>`}
       <input type="file" id="file-input" accept="image/*" hidden>
     </label>
+    <!-- على الجوال: زر يفتح الكاميرا مباشرة (capture). في الكمبيوتر يفتح اختيار ملف -->
+    <div class="upload-buttons">
+      <label class="btn" for="camera-input">${t('upload.camera')}</label>
+      <label class="btn" for="file-input">${t('upload.pick')}</label>
+      <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+    </div>
 
     <div id="upload-result">${up ? uploadResultHtml(audience, up) : ''}</div>
   `;
 
   // اختيار صورة بالضغط
-  document.getElementById('file-input').addEventListener('change', (e) => {
-    if (e.target.files[0]) handleImageFile(e.target.files[0], audience);
+  ['file-input', 'camera-input'].forEach((id) => {
+    document.getElementById(id).addEventListener('change', (e) => {
+      if (e.target.files[0]) handleImageFile(e.target.files[0], audience);
+    });
   });
 
   // أو بسحب الصورة وإفلاتها فوق المربع (في الكمبيوتر)
@@ -80,7 +88,8 @@ function uploadResultHtml(audience, up) {
       <div class="option-strip upload-strip">
         ${up.colors.map((c) => `
           <i style="background:${c.hex}; flex:${c.share}; color:${isLight(c.hex) ? '#1a1a1a' : '#fff'}">
-            <small dir="ltr">${Math.round(c.share)}%</small>
+            <!-- بلا نسب مئوية (قرار صاحب التطبيق). عرض كل لون يبقى حسب كثرته في الصورة -->
+            <small dir="ltr">${c.hex}</small>
           </i>`).join('')}
       </div>
       <p class="style-pill">${t('upload.styleIs', { style: t('style.' + style) })}</p>
