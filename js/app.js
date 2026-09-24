@@ -177,10 +177,20 @@ function renderHome() {
     <div class="audience-grid">
       <!-- "ارفع صورة": من أقوى الخاصيات، لذلك بطاقة عريضة في أول الواجهة -->
       <a class="audience-card card-upload" href="#/upload/beginner">
-        <span class="upload-stripe" aria-hidden="true">${HOME_COLORS.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
-        <span class="upload-text">
-          <h2>${t('home.upload.title')}</h2>
-          <p>${t('home.upload.desc')}</p>
+        <!-- الشريط الملوّن بطول الكتابة تماماً -->
+        <span class="upload-head">
+          <span class="upload-stripe" aria-hidden="true">${HOME_COLORS.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+          <span class="upload-text">
+            <h2>${t('home.upload.title')}</h2>
+            <p>${t('home.upload.desc')}</p>
+          </span>
+        </span>
+        <!-- كاميرات مثل ظهر الآيفون: مربع فضي و3 عدسات سوداء بحلقات ملوّنة (أصفر، برتقالي، أحمر) -->
+        <span class="cam-module" aria-hidden="true">
+          <i class="lens" style="--ring:#FFC926"></i>
+          <i class="lens" style="--ring:#F96015"></i>
+          <i class="lens" style="--ring:#D52518"></i>
+          <i class="flash"></i>
         </span>
         <span class="btn btn-primary upload-go">${t('home.upload.go')}</span>
       </a>

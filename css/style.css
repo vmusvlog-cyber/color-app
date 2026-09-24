@@ -1198,14 +1198,54 @@ html[dir="rtl"] .page-head h1::after, html[dir="rtl"] .section-title::after { tr
   box-shadow: 0 2px 0 rgba(24, 84, 42, .08);
 }
 .home-page .card-upload p { color: var(--home-green); opacity: .8; }
-.upload-stripe { display: flex; flex-direction: column; align-self: stretch; width: 14px; border-radius: 999px; overflow: hidden; flex-shrink: 0; }
+.upload-head { flex: 1; display: flex; align-items: stretch; gap: 14px; }
+.upload-stripe { display: flex; flex-direction: column; width: 10px; border-radius: 999px; overflow: hidden; flex-shrink: 0; }
 .upload-stripe i { flex: 1; }
 .upload-stripe i:nth-child(2) { box-shadow: inset 0 0 0 1px rgba(24, 84, 42, .15); }
-.upload-text { flex: 1; display: grid; gap: 4px; }
+.upload-text { display: grid; align-content: center; gap: 4px; padding: 2px 0; }
+.home-page .card-upload h2 { line-height: 1.1; }
+
+/* الكاميرات: مربع فضي لامع فيه 3 عدسات (اثنتان فوق بعض + واحدة في الوسط)، مثل ظهر الآيفون.
+   المكان ثابت (يسار/يمين) مهما كانت لغة الصفحة */
+.cam-module {
+  position: relative;
+  flex-shrink: 0;
+  width: 96px;
+  height: 96px;
+  border-radius: 26px;
+  direction: ltr;
+  background: linear-gradient(145deg, #F7F7F9 0%, #DCDDE2 55%, #C9CAD0 100%);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.9), inset 0 -2px 4px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.12);
+}
+.cam-module .lens {
+  position: absolute;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 50% 50%, #2A2F3A 0 28%, #0B0C10 30% 100%);
+  box-shadow: 0 0 0 3px var(--ring), 0 0 0 5px #B9BAC0, 0 2px 4px 5px rgba(0,0,0,.15);
+}
+/* لمعة بيضاء صغيرة داخل كل عدسة */
+.cam-module .lens::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  left: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.75);
+}
+.cam-module .lens:nth-child(1) { top: 10px; left: 10px; }
+.cam-module .lens:nth-child(2) { bottom: 10px; left: 10px; }
+.cam-module .lens:nth-child(3) { top: 32px; right: 10px; }
+/* الفلاش: نقطة فاتحة صغيرة */
+.cam-module .flash { position: absolute; top: 12px; right: 16px; width: 9px; height: 9px; border-radius: 50%; background: radial-gradient(circle, #FFF8E1, #E8DDB5); }
 .home-page .upload-go { background: var(--home-green); border-color: var(--home-green); color: var(--home-cream); white-space: nowrap; }
 /* في الواجهة الأولى البطاقة تكفي، فلا نكرر الزر في الشريط العلوي */
 .home-page .top-actions a[href^="#/upload/"] { display: none; }
 @media (max-width: 560px) {
-  .home-page .card-upload { flex-wrap: wrap; }
-  .home-page .upload-go { width: 100%; text-align: center; }
+  body.home-page .card-upload { flex-wrap: wrap; justify-content: center; }
+  .upload-head { flex-basis: 100%; }
+  .home-page .upload-go { width: 100%; text-align: center; justify-content: center; }
 }

@@ -134,6 +134,9 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       environment) and "Choose from your device"; back goes home; strip shows HEX, no percentages.
       Home shows it as a big white full-width card FIRST in the bento ("Colors from a photo",
       6-color stripe, green button); the top-bar upload button is hidden on home only.
+      Inside it (owner's 4 answers): the stripe matches the text height; between text and
+      button a CSS iPhone-style camera module (silver rounded square, 3 black lenses with
+      yellow/orange/red rings, flash dot).
 - [ ] Phase 6
 
 ---
