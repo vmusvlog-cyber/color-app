@@ -285,11 +285,60 @@ function refinePanelHtml(refine) {
     <section class="refine-panel" aria-labelledby="refine-title">
       <div class="refine-head">
         <h2 id="refine-title">${t('refine.title')}</h2>
-        ${hasRefine(refine) ? `<button type="button" class="btn btn-small" id="refine-reset">${t('refine.reset')}</button>` : ''}
+        ${hasRefine(refine) || state.technique ? `<button type="button" class="btn btn-small" id="refine-reset">${t('refine.reset')}</button>` : ''}
       </div>
       <p class="small-hint">${t('refine.subtitle')}</p>
       ${['size', 'feel', 'harmony', 'sat', 'value', 'contrast'].map(row).join('')}
+      ${techniqueRow()}
     </section>`;
+}
+
+/* صف "التقنية": تقنيات التسويق العشر. كل تقنية تبقى بألوانها الأصلية،
+   لذلك لا تغيّر اللوحات الحالية، بل تظهر بطاقة بألوانها وزر "استعمل هذه الألوان" */
+function techniqueRow() {
+  const tq = getTechnique(state.technique);
+  const audience = parseHash().audience;
+  return `
+    <div class="refine-row">
+      <div class="refine-label">
+        <strong>${t('refine.tech')}</strong>
+        <small>${t('refine.tech.hint')}</small>
+      </div>
+      <div class="choice-chips">
+        ${[''].concat(TECHNIQUES.map((x) => x.id)).map((id) => `
+          <button type="button" class="choice-chip small refine-chip ${state.technique === id ? 'selected' : ''}"
+                  data-tech="${id}" aria-pressed="${state.technique === id}">
+            ${id ? `<span class="tech-dots" aria-hidden="true">${getTechnique(id).colors.map((c) => `<i style="background:${c}"></i>`).join('')}</span>` : ''}
+            <span class="chip-text">${id ? t('tech.' + id + '.name') : t('tech.none')}</span>
+          </button>`).join('')}
+      </div>
+    </div>
+    ${tq ? `
+      <div class="tech-card">
+        ${techniqueDemoHtml(tq)}
+        <div class="tech-info">
+          <h3>${t('tech.' + tq.id + '.name')}</h3>
+          <p>${t('tech.' + tq.id + '.short')}</p>
+          <div class="tech-swatches">
+            ${tq.colors.map((c) => `<span><i style="background:${c}"></i><code dir="ltr">${c}</code></span>`).join('')}
+          </div>
+          <p class="small-hint">${t('tech.original')}</p>
+          <div class="tech-actions">
+            <a class="btn btn-primary" href="#/result/${audience.id}?c=${colorsToParam(tq.colors)}&s=${tq.style}&tech=${tq.id}">${t('tech.use')}</a>
+            <button type="button" class="btn" id="tech-more" aria-expanded="${state.techMore}">${state.techMore ? t('tech.less') : t('tech.more')}</button>
+          </div>
+          ${state.techMore ? techniqueDetailsHtml(tq) : ''}
+        </div>
+      </div>` : ''}`;
+}
+
+/* تفاصيل "المزيد": الفكرة التسويقية + كيف تستخدمها */
+function techniqueDetailsHtml(tq) {
+  return `
+    <div class="tech-more">
+      <p><strong>${t('tech.concept')}:</strong> ${t('tech.' + tq.id + '.concept')}</p>
+      <p><strong>${t('tech.how')}:</strong> ${t('tech.' + tq.id + '.how')}</p>
+    </div>`;
 }
 
 /* صف "عدد الألوان": 3 / 4 / 5 */
@@ -319,6 +368,18 @@ function bindRefinePanel(onChange) {
       onChange();
     });
   });
+  // التقنية: الضغط على المختارة مرة ثانية لا يغيّر شيئاً، و"بدون" يلغيها
+  document.querySelectorAll('[data-tech]').forEach((btn) => {
+    btn.addEventListener('click', () => { state.technique = btn.dataset.tech; state.techMore = false; onChange(); });
+  });
+  // عند الانتقال للنتيجة تبدأ التفاصيل مغلقة
+  document.querySelectorAll('.tech-actions a').forEach((a) => a.addEventListener('click', () => { state.techMore = false; }));
+  const more = document.getElementById('tech-more');
+  if (more) more.addEventListener('click', () => { state.techMore = !state.techMore; onChange(); });
   const reset = document.getElementById('refine-reset');
-  if (reset) reset.addEventListener('click', () => { state.refine = { ...defaultRefine(), temp: state.refine.temp }; onChange(); });
+  if (reset) reset.addEventListener('click', () => {
+    state.refine = { ...defaultRefine(), temp: state.refine.temp };
+    state.technique = '';
+    onChange();
+  });
 }

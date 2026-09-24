@@ -49,7 +49,7 @@ function colorPhrase(hex) {
 /*
   يصنع 4 برومبتات لمكان معيّن.
   kind  = room / social / logo / web / app / card / packaging / menu
-  ctx   = { colors, style, feel, temp, space, name, headFont }
+  ctx   = { colors, style, feel, temp, space, name, headFont, technique }
   يرجع: [{ key, text }]  (key = اسم النسخة في ملف الترجمة)
 */
 function buildPrompts(kind, ctx) {
@@ -63,7 +63,11 @@ function buildPrompts(kind, ctx) {
   // قائمة الألوان الدقيقة في آخر كل برومبت، حتى تلتزم الأداة بها
   const palette = `Use exactly this color palette: ${ctx.colors.map(colorPhrase).join(', ')}.`;
   const quality = 'Photorealistic, high detail, professional photography, no watermark.';
-  const make = (key, body) => ({ key, text: `${body}${feel}${temp}. ${palette} ${quality}` });
+  // تقنية التسويق (إن اختارها المستخدم): نضيف اسمها وطريقة تطبيقها
+  const tech = ctx.technique
+    ? ` Apply the "${techniqueNameEn(ctx.technique)}" marketing technique: ${ctx.technique.prompt}.`
+    : '';
+  const make = (key, body) => ({ key, text: `${body}${feel}${temp}.${tech} ${palette} ${quality}` });
 
   if (kind === 'room') {
     if (ctx.space === 'facade') {

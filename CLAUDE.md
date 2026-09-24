@@ -39,7 +39,9 @@ js/wheel.js       The color wheel drawn on a canvas
 js/generator.js   Palette generation (quiz answers / user colors), style detection,
                   color families & meanings, competitor colors, color-name lookup
 js/refine.js      "Refine the result" panel: feeling, warm/cool, harmony, saturation,
-                  brightness, contrast (logic + panel UI)
+                  brightness, contrast, technique row (logic + panel UI)
+js/techniques.js  The owner's 10 marketing techniques: original colors (never changed),
+                  English prompt wording, small CSS demo per technique
 js/fonts.js       Font pairings per style (Google Fonts) and the font loader
 js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
 js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
@@ -107,8 +109,11 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       prompts (with the palette's HEX codes) to copy into ChatGPT/Gemini, with one Arabic line
       explaining it, plus Unsplash inspiration (search button now; in-app photos once the owner
       gives an Unsplash key; quiz mood/style photos also need that key).
-      Part C — the owner's 10 marketing techniques: a "Technique" row in the Refine panel; each
-      uses its ORIGINAL colors; short explanation + "More" for details; added to the prompts.
+      Part C DONE — the owner's 10 marketing techniques: a "Technique" row (last) in the Refine
+      panel; choosing one shows a card (CSS demo, its ORIGINAL 3 colors, short explanation,
+      "More" = marketing idea + how to use, "Use this technique's colors" → result with
+      `&tech=<id>`). On the result: a technique note + More; warm/cool never changes its colors;
+      prompts add "Apply the <name> marketing technique: ...". Texts in i18n 'tech.*'.
 - [x] Extra (owner's 10 answers): home screen ONLY got new colors (every other screen stays
       white and calm so users focus on their palette). Cream #F3E8CC background, cream top bar
       with forest-green outlined buttons, rounded fonts (Baloo Bhaijaan 2 / Fredoka), title words

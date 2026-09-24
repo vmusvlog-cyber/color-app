@@ -22,7 +22,9 @@ function renderResult(audience, params) {
 
   // colors = الألوان الأصلية (من الرابط)
   // shown  = ما نعرضه فعلاً بعد تطبيق "نسخة داكنة" أو "للطباعة"
-  const shown = applyView(colors);
+  // تقنية تسويق؟ ألوانها الأصلية لا تتغير بالحار/البارد
+  const technique = getTechnique(params.tech);
+  const shown = applyView(colors, !!technique);
   syncColorHistory(colors); // سجل الألوان السابقة لكل بطاقة (للسهمين)
   const hist = state.colorHistory; // (ليس history — هذا الاسم يستخدمه المتصفح)
   const title = params.p ? t('pal.' + params.p) : t('result.title');
@@ -50,6 +52,14 @@ function renderResult(audience, params) {
       </div>
       <p class="lead">${t('result.subtitle')}</p>
     </header>
+
+    ${technique ? `
+      <!-- التقنية المختارة: اسمها وشرح قصير و"المزيد" -->
+      <section class="tech-note">
+        <p><strong>${t('tech.label')}: ${t('tech.' + technique.id + '.name')}</strong> — ${t('tech.' + technique.id + '.short')}</p>
+        <button type="button" class="btn btn-small" id="tech-more" aria-expanded="${state.techMore}">${state.techMore ? t('tech.less') : t('tech.more')}</button>
+        ${state.techMore ? techniqueDetailsHtml(technique) : ''}
+      </section>` : ''}
 
     <!-- 0) الثقافة -->
     <section class="culture-box" id="culture-box" ${state.cultureOpen ? '' : 'hidden'}>
@@ -153,6 +163,8 @@ function renderResult(audience, params) {
 
   // تحميل: نحمّل الألوان كما تظهر الآن (مع النسخة الداكنة أو للطباعة إن كانت مفعّلة)
   document.getElementById('download-btn').addEventListener('click', () => openDownload(shown, title));
+  const techMore = document.getElementById('tech-more');
+  if (techMore) techMore.addEventListener('click', () => { state.techMore = !state.techMore; render(true); });
   // الخطوط: نافذة فيها 6 أزواج بألوان اللوحة
   document.getElementById('fonts-btn').addEventListener('click', () => openFonts(shown, style));
 
@@ -444,7 +456,9 @@ function renderPreviews(colors, style) {
   const ctx = {
     colors: colors.slice(0, 5), style, feel: state.refine.feel, temp: state.refine.temp,
     space: params.space, name: state.projectName.trim(), headFont: pair.en[0],
+    technique: getTechnique(params.tech),
   };
+  if (ctx.technique) ctx.temp = ''; // ألوان التقنية أصلية، فلا نطلب حرارة معيّنة
   const prompts = buildPrompts(kind, ctx);
   const query = inspirationQuery(kind, ctx);
   const pinQuery = `${colorNameEn(colors[1] || colors[0])} ${colorNameEn(colors[2] || colors[0])} ${query}`;
@@ -558,9 +572,9 @@ function sharePaletteLink(url, title) {
 /* ---------- خيارات العرض ---------- */
 
 /* يطبّق زر حار/بارد (من الشريط العلوي) و"نسخة داكنة" و"للطباعة" إن كانت مفعّلة */
-function applyView(colors) {
+function applyView(colors, keepOriginal) {
   let out = colors;
-  if (state.refine.temp) out = applyTemperature(out, state.refine.temp);
+  if (state.refine.temp && !keepOriginal) out = applyTemperature(out, state.refine.temp);
   if (state.view.dark) out = darkPalette(out);
   if (state.view.print) out = printPalette(out);
   return out;
