@@ -1,5 +1,5 @@
 /* =========================================================================
-   refine.js — لوحة "🎯 دقّق النتيجة"
+   refine.js — لوحة "دقّق النتيجة"
    اختيارات تجعل الألوان المقترحة أدق. كل اختيار قيمته '' = "تلقائي" (لا تغيير).
      feel      الإحساس (سيكولوجية الألوان): يحدد درجة اللون
      temp      حار أو بارد
@@ -284,8 +284,8 @@ function refinePanelHtml(refine) {
   return `
     <section class="refine-panel" aria-labelledby="refine-title">
       <div class="refine-head">
-        <h2 id="refine-title">🎯 ${t('refine.title')}</h2>
-        ${hasRefine(refine) ? `<button type="button" class="btn btn-small" id="refine-reset">↺ ${t('refine.reset')}</button>` : ''}
+        <h2 id="refine-title">${t('refine.title')}</h2>
+        ${hasRefine(refine) ? `<button type="button" class="btn btn-small" id="refine-reset">${t('refine.reset')}</button>` : ''}
       </div>
       <p class="small-hint">${t('refine.subtitle')}</p>
       ${['size', 'feel', 'harmony', 'sat', 'value', 'contrast'].map(row).join('')}

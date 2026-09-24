@@ -1,7 +1,7 @@
 /* =========================================================================
    result.js — شاشة النتيجة
    الأقسام بالترتيب:
-     0) أيقونة الثقافة 🌍 (اختياري)
+     0) أيقونة الثقافة (اختياري)
      1) بطاقات البولارويد + قاعدة 60-30-10
      1ب) خيارات العرض: تدرجات، نسخة داكنة، للطباعة
      2) زر "لماذا هذه الألوان؟"
@@ -45,7 +45,7 @@ function renderResult(audience, params) {
       <div class="title-row">
         <h1>${title}</h1>
         <button type="button" class="culture-btn" id="culture-btn" aria-expanded="${state.cultureOpen}">
-          🌍 <span>${state.culture ? t('culture.' + state.culture) : t('culture.button')}</span>
+          <span>${state.culture ? t('culture.' + state.culture) : t('culture.button')}</span>
         </button>
       </div>
       <p class="lead">${t('result.subtitle')}</p>
@@ -86,10 +86,11 @@ function renderResult(audience, params) {
 
     <!-- أزرار: تحميل، حفظ، مشاركة -->
     <div class="action-bar">
-      <button type="button" class="btn btn-primary" id="download-btn">⬇ ${t('action.download')}</button>
-      <button type="button" class="btn" id="save-btn">♡ ${t('action.save')}</button>
-      <button type="button" class="btn" id="share-btn">🔗 ${t('action.share')}</button>
-      ${cloudEnabled() ? `<button type="button" class="btn" id="publish-btn">📢 ${t('action.publish')}</button>` : ''}
+      <button type="button" class="btn btn-primary" id="download-btn">${t('action.download')}</button>
+      <button type="button" class="btn" id="save-btn">${t('action.save')}</button>
+      <button type="button" class="btn" id="share-btn">${t('action.share')}</button>
+      <button type="button" class="btn" id="fonts-btn">${t('fonts.button')}</button>
+      ${cloudEnabled() ? `<button type="button" class="btn" id="publish-btn">${t('action.publish')}</button>` : ''}
     </div>
 
     <!-- 1ب) خيارات العرض -->
@@ -103,15 +104,15 @@ function renderResult(audience, params) {
           </button>
         `).join('')}
       </div>
-      ${state.view.dark ? `<p class="view-note">🌙 ${t('view.darkNote')}</p>` : ''}
-      ${state.view.print ? `<p class="view-note">🖨️ ${t('view.printNote')}</p>` : ''}
+      ${state.view.dark ? `<p class="view-note">${t('view.darkNote')}</p>` : ''}
+      ${state.view.print ? `<p class="view-note">${t('view.printNote')}</p>` : ''}
       ${state.view.gradients ? gradientsHtml(shown) : ''}
     </section>
 
     <!-- 2) لماذا هذه الألوان؟ -->
     <section class="why-box">
       <button type="button" class="btn" id="why-btn" aria-expanded="${state.whyOpen}">
-        💡 ${state.whyOpen ? t('why.hide') : t('why.button')}
+        ${state.whyOpen ? t('why.hide') : t('why.button')}
       </button>
       <div id="why-panel" class="why-panel" ${state.whyOpen ? '' : 'hidden'}>${whyHtml(shown, industry)}</div>
     </section>
@@ -119,12 +120,7 @@ function renderResult(audience, params) {
     <!-- 3) تميّز عن منافسيك -->
     ${industry ? competitorHtml(industry) : ''}
 
-    <!-- 4) الخطوط -->
-    <section class="result-section">
-      <h2 class="section-title">${t('fonts.title')}</h2>
-      <p class="small-hint">${t('fonts.subtitle')}</p>
-      <div id="font-list" class="font-list"></div>
-    </section>
+    <!-- 4) الخطوط: صارت في نافذة خاصة تفتح من زر "الخطوط" بالأعلى -->
 
     <!-- 5) المعاينات -->
     <section class="result-section">
@@ -138,12 +134,11 @@ function renderResult(audience, params) {
     </section>
 
     <div class="actions">
-      <a class="btn btn-primary" href="#/free/${audience.id}?c=${colorsToParam(shown)}">✋ ${t('result.edit')}</a>
-      <a class="btn" href="#/ready/${audience.id}">🎨 ${t('result.backReady')}</a>
+      <a class="btn btn-primary" href="#/free/${audience.id}?c=${colorsToParam(shown)}">${t('result.edit')}</a>
+      <a class="btn" href="#/ready/${audience.id}">${t('result.backReady')}</a>
     </div>
   `;
 
-  renderFontList(shown, style);
   renderPreviews(shown, style);
 
   /* يغيّر الألوان ويحدّث الرابط بدون إضافة خطوة جديدة لزر الرجوع */
@@ -158,6 +153,8 @@ function renderResult(audience, params) {
 
   // تحميل: نحمّل الألوان كما تظهر الآن (مع النسخة الداكنة أو للطباعة إن كانت مفعّلة)
   document.getElementById('download-btn').addEventListener('click', () => openDownload(shown, title));
+  // الخطوط: نافذة فيها 6 أزواج بألوان اللوحة
+  document.getElementById('fonts-btn').addEventListener('click', () => openFonts(shown, style));
 
   // حفظ في "لوحاتي" على هذا الجهاز
   // بيانات اللوحة كما نحفظها أو ننشرها
@@ -317,7 +314,7 @@ function competitorHtml(industry) {
   if (!standout) return '';
   return `
     <section class="result-section comp-box">
-      <h2 class="section-title">🏁 ${t('comp.title')}</h2>
+      <h2 class="section-title">${t('comp.title')}</h2>
       <p>${t('comp.common', { industry: t('ind.' + industry) })}</p>
       <div class="comp-row">
         ${INDUSTRY_COLORS[industry].map((c) => `<span class="comp-chip" style="background:${c}" title="${colorName(c)}"></span>`).join('')}
@@ -332,39 +329,81 @@ function competitorHtml(industry) {
   `;
 }
 
-/* ---------- 4) بطاقات أزواج الخطوط ---------- */
-function renderFontList(colors, style) {
-  const pairs = FONT_PAIRS[style];
-  const bg = colors[0];
-  const headColor = readableOn(bg, colors);
-  const list = document.getElementById('font-list');
+/* ---------- 4) نافذة الخطوط: 3 أزواج تناسب الأسلوب + 3 للتجربة ---------- */
+function openFonts(colors, style) {
+  let overlay = document.getElementById('fonts-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.id = 'fonts-overlay';
+    overlay.className = 'overlay';
+    document.body.appendChild(overlay);
+    // الضغط خارج النافذة أو زر Esc يغلقها
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) closeFonts(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeFonts(); });
+  }
+  overlay.hidden = false;
+  document.body.classList.add('no-scroll');
+  renderFontsModal(colors, style);
+}
 
-  list.innerHTML = pairs.map((pair, i) => {
-    const fonts = currentLang === 'ar' ? pair.ar : pair.en; // نعرض المثال بلغة الواجهة
-    const selected = i === state.fontIndex;
-    return `
-      <button type="button" class="font-card ${selected ? 'selected' : ''}" data-index="${i}" aria-pressed="${selected}">
-        <span class="font-sample" style="background:${bg}">
-          <span class="font-head" style="font-family:'${fonts[0]}', sans-serif; font-weight:${headingWeight(fonts[0])}; color:${headColor}">${t('fonts.sampleHead')}</span>
-          <span class="font-body" style="font-family:'${fonts[1]}', sans-serif; color:${headColor}">${t('fonts.sampleBody')}</span>
-        </span>
-        <span class="font-meta">
-          ${selected ? `<span class="badge-inline">✓ ${t('fonts.selected')}</span>` : ''}
-          <span><b>${t('fonts.arabic')}:</b> ${pair.ar[0]} + ${pair.ar[1]}</span>
-          <span dir="ltr" class="en-names"><b>${t('fonts.english')}:</b> ${pair.en[0]} + ${pair.en[1]}</span>
-          <span class="font-advice">${t('font.adv.' + pair.advice)}</span>
-        </span>
-      </button>
-    `;
-  }).join('');
+function closeFonts() {
+  const overlay = document.getElementById('fonts-overlay');
+  if (overlay && !overlay.hidden) {
+    overlay.hidden = true;
+    document.body.classList.remove('no-scroll');
+  }
+}
 
-  list.querySelectorAll('.font-card').forEach((card) => {
-    card.addEventListener('click', () => {
-      state.fontIndex = Number(card.dataset.index);
-      renderFontList(colors, style);
-      renderPreviews(colors, style);
+function renderFontsModal(colors, style) {
+  const pairs = fontPairsFor(style);
+  const overlay = document.getElementById('fonts-overlay');
+  const card = (pair, i) => fontCardHtml(pair, i, colors);
+  overlay.innerHTML = `
+    <div class="modal fonts-modal" role="dialog" aria-modal="true" aria-labelledby="fonts-heading">
+      <div class="modal-head">
+        <h2 id="fonts-heading">${t('fonts.title')}</h2>
+        <button type="button" class="modal-close" id="fonts-close" aria-label="${t('dl.close')}">✕</button>
+      </div>
+      <p class="small-hint">${t('fonts.subtitle')}</p>
+      <h3 class="fonts-group">${t('fonts.forStyle')}</h3>
+      <div class="font-list">${pairs.slice(0, 3).map((p, i) => card(p, i)).join('')}</div>
+      <h3 class="fonts-group">${t('fonts.tryMore')}</h3>
+      <div class="font-list">${pairs.slice(3).map((p, i) => card(p, i + 3)).join('')}</div>
+    </div>
+  `;
+  document.getElementById('fonts-close').addEventListener('click', closeFonts);
+  overlay.querySelectorAll('.font-card').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      state.fontIndex = Number(btn.dataset.index);
+      renderFontsModal(colors, style);  // نحدّث علامة "مختار"
+      renderPreviews(colors, style);    // والبرومبتات تستخدم الخط الجديد
     });
   });
+}
+
+/* بطاقة زوج خطوط واحد، مكتوبة بألوان اللوحة نفسها */
+function fontCardHtml(pair, i, colors) {
+  const bg = colors[0];
+  const headColor = readableOn(bg, colors);
+  // لون النص: لون آخر من اللوحة يُقرأ على الخلفية، وإلا نفس لون العنوان
+  const bodyColor = colors.slice(1).find((c) => c !== headColor && contrastRatio(c, bg) >= 4.5) || headColor;
+  const fonts = currentLang === 'ar' ? pair.ar : pair.en; // نعرض المثال بلغة الواجهة
+  const selected = i === state.fontIndex;
+  return `
+    <button type="button" class="font-card ${selected ? 'selected' : ''}" data-index="${i}" aria-pressed="${selected}">
+      <span class="font-sample" style="background:${bg}">
+        <span class="font-head" style="font-family:'${fonts[0]}', sans-serif; font-weight:${headingWeight(fonts[0])}; color:${headColor}">${t('fonts.sampleHead')}</span>
+        <span class="font-body" style="font-family:'${fonts[1]}', sans-serif; color:${bodyColor}">${t('fonts.sampleBody')}</span>
+        <span class="font-dots" aria-hidden="true">${colors.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+      </span>
+      <span class="font-meta">
+        ${selected ? `<span class="badge-inline">${t('fonts.selected')}</span>` : ''}
+        <span><b>${t('fonts.arabic')}:</b> ${pair.ar[0]} + ${pair.ar[1]}</span>
+        <span dir="ltr" class="en-names"><b>${t('fonts.english')}:</b> ${pair.en[0]} + ${pair.en[1]}</span>
+        <span class="font-advice">${t('font.adv.' + pair.advice)}</span>
+      </span>
+    </button>
+  `;
 }
 
 /* ---------- 5) المعاينات: "أين تريد أن ترى ألوانك؟" ----------
@@ -372,9 +411,9 @@ function renderFontList(colors, style) {
    إذا لم يختر المستخدم بعد، نختار المعاينة المناسبة من إجاباته
    (مثلاً: سكن وديكور ← غرفة، قائمة الطعام ← قائمة). */
 const PREVIEW_KINDS = [
-  { id: 'logo', icon: '🏷️' }, { id: 'social', icon: '📱' }, { id: 'room', icon: '🛋️' },
-  { id: 'web', icon: '💻' }, { id: 'app', icon: '📲' }, { id: 'card', icon: '🪪' },
-  { id: 'packaging', icon: '📦' }, { id: 'menu', icon: '🍽️' },
+  { id: 'logo' }, { id: 'social' }, { id: 'room' },
+  { id: 'web' }, { id: 'app' }, { id: 'card' },
+  { id: 'packaging' }, { id: 'menu' },
 ];
 
 /* أي معاينة تناسب إجابات المستخدم؟ */
@@ -397,12 +436,11 @@ function renderPreviews(colors, style) {
   // أيقونات الاختيار
   document.getElementById('preview-picker').innerHTML = PREVIEW_KINDS.map((k) => `
     <button type="button" class="preview-kind ${k.id === kind ? 'selected' : ''}" data-kind="${k.id}" aria-pressed="${k.id === kind}">
-      <span class="preview-icon" aria-hidden="true">${k.id === 'room' && params.space === 'facade' ? '🏠' : k.icon}</span>
       <span>${k.id === 'room' && params.space === 'facade' ? t('preview.facade') : t('preview.' + k.id)}</span>
     </button>`).join('');
 
   // معلومات البرومبت: الألوان، الأسلوب، الإحساس، المكان، الاسم، والخط (الإنجليزي لأن البرومبت إنجليزي)
-  const pair = FONT_PAIRS[style][state.fontIndex];
+  const pair = fontPairsFor(style)[state.fontIndex] || fontPairsFor(style)[0];
   const ctx = {
     colors: colors.slice(0, 5), style, feel: state.refine.feel, temp: state.refine.temp,
     space: params.space, name: state.projectName.trim(), headFont: pair.en[0],
@@ -413,7 +451,7 @@ function renderPreviews(colors, style) {
 
   document.getElementById('previews').innerHTML = `
     <div class="prompt-intro">
-      <p>🪄 ${t('prompt.intro', { place: label })}</p>
+      <p>${t('prompt.intro', { place: label })}</p>
       <div class="ai-links">
         <a class="btn btn-small" href="https://chatgpt.com/" target="_blank" rel="noopener">ChatGPT ↗</a>
         <a class="btn btn-small" href="https://gemini.google.com/app" target="_blank" rel="noopener">Gemini ↗</a>
@@ -424,18 +462,18 @@ function renderPreviews(colors, style) {
         <div class="prompt-card">
           <div class="prompt-head">
             <strong>${i + 1}. ${t('prompt.v.' + pr.key)}</strong>
-            <button type="button" class="btn btn-small btn-primary" data-copy-prompt="${i}">📋 ${t('prompt.copy')}</button>
+            <button type="button" class="btn btn-small btn-primary" data-copy-prompt="${i}">${t('prompt.copy')}</button>
           </div>
           <p class="prompt-text" dir="ltr" id="prompt-${i}">${escapeHtml(pr.text)}</p>
         </div>`).join('')}
     </div>
 
     <section class="inspo">
-      <h3>📷 ${t('photo.title', { place: label })}</h3>
+      <h3>${t('photo.title', { place: label })}</h3>
       <div id="inspo-photos">${unsplashEnabled() ? `<p class="small-hint">${t('photo.loading')}</p>` : ''}</div>
       <div class="actions">
-        <a class="btn" href="${unsplashSearchUrl(query, unsplashColor(colors[1] || colors[0]))}" target="_blank" rel="noopener">📷 ${t('photo.openUnsplash')}</a>
-        <a class="btn" href="${pinterestSearchUrl(pinQuery)}" target="_blank" rel="noopener">📌 ${t('photo.openPinterest')}</a>
+        <a class="btn" href="${unsplashSearchUrl(query, unsplashColor(colors[1] || colors[0]))}" target="_blank" rel="noopener">${t('photo.openUnsplash')}</a>
+        <a class="btn" href="${pinterestSearchUrl(pinQuery)}" target="_blank" rel="noopener">${t('photo.openPinterest')}</a>
       </div>
     </section>
   `;
@@ -569,7 +607,7 @@ function cultureHtml(colors) {
         ${notes.map((n) => `
           <li class="${n.type}">
             <span class="dot" style="background:${n.hex}"></span>
-            <strong>${n.type === 'good' ? '✓ ' + t('culture.good') : '⚠ ' + t('culture.caution')}:</strong>
+            <strong>${n.type === 'good' ? t('culture.good') : t('culture.caution')}:</strong>
             ${t(n.key)}
           </li>`).join('')}
       </ul>

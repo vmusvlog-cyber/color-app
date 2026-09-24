@@ -116,6 +116,13 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       without icons in a bento layout of different sizes: beginner #FFC926, business #18542A,
       creator #F96015, identity #D52518, plus a small kiwi #9ABC05 card that opens the gallery.
       Hover scales the card. Styles are scoped under `body.home-page` (set in render()).
+- [x] Extra (owner's 5 answers): all other screens use off-white #FBF7EE (`--page`); headings are
+      forest green (`--heading`) with a small 5-color bar under page titles and section titles;
+      buttons/cards stay simple. ALL emoji removed app-wide (text only; kept only ← → ↗ ✕ ♥ as
+      UI symbols); top bar shows words, wrapping to 2 lines on phones. Fonts moved from the result
+      page into a "Fonts" button next to Download/Save/Share that opens a modal with 6 pairings
+      (fontPairsFor: 3 for the style + 3 "also try" from other styles), each sample drawn in the
+      palette's own colors; the chosen pairing feeds the prompts.
 - [ ] Phase 6
 
 ---

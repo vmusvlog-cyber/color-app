@@ -111,11 +111,11 @@ function renderTopbar() {
         ${['warm', 'cool'].map((v) => `
           <button type="button" class="${state.refine.temp === v ? 'on' : ''}" data-temp="${v}"
                   aria-pressed="${state.refine.temp === v}" title="${t('temp.' + v)}">
-            ${v === 'warm' ? '🔥' : '❄️'}<span class="nav-text"> ${t('temp.' + v)}</span>
+            ${t('temp.' + v)}
           </button>`).join('')}
       </span>
-      <a class="lang-btn" href="#/gallery">🖼 <span class="nav-text">${t('nav.gallery')}</span></a>
-      <a class="lang-btn" href="#/saved">♡ <span class="nav-text">${t('nav.saved')}</span>${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
+      <a class="lang-btn" href="#/gallery">${t('nav.gallery')}</a>
+      <a class="lang-btn" href="#/saved">${t('nav.saved')}${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
       <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
     </nav>
   `;
@@ -194,10 +194,10 @@ const HOME_COLORS = ['#FFC926', '#F3E8CC', '#F96015', '#D52518', '#18542A', '#9A
    ========================================================================= */
 function renderMethods(audience) {
   const methods = [
-    { id: 'upload',   icon: '🖼️', soon: false },
-    { id: 'describe', icon: '💬', soon: false },
-    { id: 'ready',    icon: '🎨', soon: false },
-    { id: 'free',     icon: '✋', soon: false },
+    { id: 'upload',   soon: false },
+    { id: 'describe', soon: false },
+    { id: 'ready',    soon: false },
+    { id: 'free',     soon: false },
   ];
 
   app.innerHTML = `
@@ -211,13 +211,11 @@ function renderMethods(audience) {
     <div class="method-grid">
       ${methods.map((m) => m.soon
         ? `<div class="method-card is-soon" aria-disabled="true">
-             <span class="method-icon" aria-hidden="true">${m.icon}</span>
              <h2>${t('method.' + m.id + '.title')}</h2>
              <p>${t('method.' + m.id + '.desc')}</p>
              <span class="badge">${t('common.soon')}</span>
            </div>`
         : `<a class="method-card" href="#/${m.id}/${audience.id}">
-             <span class="method-icon" aria-hidden="true">${m.icon}</span>
              <h2>${t('method.' + m.id + '.title')}</h2>
              <p>${t('method.' + m.id + '.desc')}</p>
            </a>`
@@ -254,7 +252,7 @@ function renderReady(audience) {
         <button type="button" role="tab" class="style-tab ${s === state.readyStyle ? 'active' : ''}"
                 data-style="${s}" aria-selected="${s === state.readyStyle}">
           ${t('style.' + s)}
-          ${i < 2 ? `<span class="rec">★ ${t('common.recommended')}</span>` : ''}
+          ${i < 2 ? `<span class="rec">${t('common.recommended')}</span>` : ''}
         </button>
       `).join('')}
     </div>
@@ -316,7 +314,7 @@ function renderFree(audience, params) {
       <div id="palette-zone" class="palette-zone"></div>
       <p class="small-hint">${t('free.selectHint')}</p>
       <div class="actions">
-        <button type="button" class="btn btn-danger" id="delete-btn">🗑 ${t('free.delete')}</button>
+        <button type="button" class="btn btn-danger" id="delete-btn">${t('free.delete')}</button>
         <button type="button" class="btn" id="clear-btn">${t('free.clear')}</button>
         <button type="button" class="btn btn-primary" id="result-btn">${t('free.seeResult')} <span class="fwd-arrow" aria-hidden="true">→</span></button>
       </div>
@@ -327,7 +325,7 @@ function renderFree(audience, params) {
       <section class="source-box">
         <div class="source-head">
           <h2>${t('free.suggestions')}</h2>
-          <button type="button" class="btn btn-small" id="refresh-btn">↻ ${t('free.refresh')}</button>
+          <button type="button" class="btn btn-small" id="refresh-btn">${t('free.refresh')}</button>
         </div>
         <div class="swatch-strip" id="suggestions"></div>
       </section>
@@ -508,6 +506,7 @@ function deleteSelected() {
 function render(keepScroll) {
   // عند الانتقال لشاشة أخرى نغلق أي نافذة مفتوحة (التحميل أو تسجيل الدخول)
   if (!keepScroll) { closeDownload(); closeSignIn(); }
+  closeFonts(); // نافذة الخطوط تُغلق مع أي إعادة رسم (حتى لا تبقى بلغة أو ألوان قديمة)
   applyLanguage();
   renderTopbar();
   const { screen, audience, params } = parseHash();

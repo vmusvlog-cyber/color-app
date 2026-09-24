@@ -41,11 +41,25 @@ function headingWeight(font) {
 }
 
 /*
-  يحمّل خطوط الأسلوب من Google Fonts (مرة واحدة لكل أسلوب).
+  الأزواج الستة التي تظهر في نافذة "الخطوط":
+  أول 3 = تناسب أسلوب الألوان، وآخر 3 = "جرّب أيضاً" (أول زوج من 3 أساليب أخرى).
+  كل زوج يحمل اسم أسلوبه (style) حتى نعرف من أين جاء.
+*/
+function fontPairsFor(style) {
+  const own = (FONT_PAIRS[style] || FONT_PAIRS.minimal).map((p) => ({ ...p, style }));
+  const order = Object.keys(FONT_PAIRS);
+  const start = order.indexOf(style);
+  const others = [1, 2, 3].map((k) => order[(start + k) % order.length])
+    .map((s) => ({ ...FONT_PAIRS[s][0], style: s }));
+  return [...own, ...others];
+}
+
+/*
+  يحمّل خطوط الأسلوب (والأزواج الثلاثة الإضافية) من Google Fonts (مرة واحدة لكل أسلوب).
   نضيف رابط <link> في رأس الصفحة، والمتصفح يحمّل الخطوط تلقائياً.
 */
 function loadFontsForStyle(style) {
-  const pairs = FONT_PAIRS[style] || FONT_PAIRS.minimal;
+  const pairs = fontPairsFor(style);
   const names = new Set();
   pairs.forEach((p) => [...p.ar, ...p.en].forEach((f) => names.add(f)));
 

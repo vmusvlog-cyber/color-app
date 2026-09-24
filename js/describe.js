@@ -60,12 +60,10 @@ function renderDescribe(audience) {
     </header>
     <div class="method-grid two">
       <a class="method-card big" href="#/quiz/${audience.id}">
-        <span class="method-icon" aria-hidden="true">🌱</span>
         <h2>${t('describe.beginner.title')}</h2>
         <p>${t('describe.beginner.desc')}</p>
       </a>
       <a class="method-card big" href="#/mycolors/${audience.id}">
-        <span class="method-icon" aria-hidden="true">🎯</span>
         <h2>${t('describe.has.title')}</h2>
         <p>${t('describe.has.desc')}</p>
       </a>
@@ -156,7 +154,7 @@ function loadQuizPhotos(q) {
         if (!photo || !document.body.contains(btn)) return;
         btn.querySelector('.choice-pic').innerHTML = `<img src="${photo.thumb}" alt="${escapeHtml(photo.alt)}">`;
         btn.querySelector('.choice-label').insertAdjacentHTML('beforeend',
-          `<small class="photo-credit">📷 ${escapeHtml(photo.author)} · Unsplash</small>`);
+          `<small class="photo-credit">${escapeHtml(photo.author)} · Unsplash</small>`);
       })
       .catch(() => { /* نبقي الرسمة إن فشل التحميل */ });
   });
@@ -312,7 +310,7 @@ function renderOptions(audience, params) {
     </div>
 
     <div class="actions">
-      <button type="button" class="btn" id="more-btn">↻ ${t('options.more')}</button>
+      <button type="button" class="btn" id="more-btn">${t('options.more')}</button>
     </div>
   `;
 

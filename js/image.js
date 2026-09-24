@@ -29,7 +29,7 @@ function renderUpload(audience) {
       ${up
         ? `<img src="${up.src}" alt="" class="upload-preview">
            <span class="btn btn-small">${t('upload.change')}</span>`
-        : `<span class="drop-icon" aria-hidden="true">🖼️</span><span>${t('upload.drop')}</span>`}
+        : `<span>${t('upload.drop')}</span>`}
       <input type="file" id="file-input" accept="image/*" hidden>
     </label>
 
@@ -86,8 +86,8 @@ function uploadResultHtml(audience, up) {
       <p class="style-pill">${t('upload.styleIs', { style: t('style.' + style) })}</p>
       <div class="why-panel">${whyHtml(colors, null)}</div>
       <div class="actions">
-        <a class="btn btn-primary" href="#/result/${audience.id}?c=${colorsToParam(colors)}&s=${style}&from=upload">✓ ${t('upload.keep')}</a>
-        <a class="btn" href="#/options/${audience.id}?mode=image&base=${colorsToParam(colors)}&s=${style}">✨ ${t('upload.adjust')}</a>
+        <a class="btn btn-primary" href="#/result/${audience.id}?c=${colorsToParam(colors)}&s=${style}&from=upload">${t('upload.keep')}</a>
+        <a class="btn" href="#/options/${audience.id}?mode=image&base=${colorsToParam(colors)}&s=${style}">${t('upload.adjust')}</a>
       </div>
     </section>
   `;

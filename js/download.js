@@ -136,18 +136,16 @@ function renderDlFormat(done) {
   dlFrame(3, `
     <h2 id="dl-heading">${done ? t('dl.done') : t('dl.formatTitle')}</h2>
     ${account ? `<p class="small-hint">${t('dl.hello', { name: escapeHtml(account.name) })}</p>` : ''}
-    ${dl.linkSent && !isSignedIn() ? `<p class="small-hint">✉️ ${t('dl.linkSent')}</p>` : ''}
+    ${dl.linkSent && !isSignedIn() ? `<p class="small-hint">${t('dl.linkSent')}</p>` : ''}
     ${done && dl.lastPng ? `
       <img src="${dl.lastPng}" alt="${escapeHtml(dl.title)}" class="dl-preview">
       <p class="small-hint">${t('dl.fallback')}</p>` : ''}
     <div class="format-grid">
       <button type="button" class="format-card" data-format="png">
-        <span class="format-icon" aria-hidden="true">🖼️</span>
         <strong>${t('dl.png')}</strong>
         <small>${t('dl.pngDesc')}</small>
       </button>
       <button type="button" class="format-card" data-format="pdf">
-        <span class="format-icon" aria-hidden="true">📄</span>
         <strong>${t('dl.pdf')}</strong>
         <small>${t('dl.pdfDesc')}</small>
       </button>

@@ -8,10 +8,10 @@
   (هذا هو معنى "مضبوطة حسب الجمهور" في هذه المرحلة)
 */
 const AUDIENCES = [
-  { id: 'beginner', icon: '🎨', styles: ['minimal', 'earthy', 'retro', 'luxury', 'bold'] },
-  { id: 'business', icon: '💼', styles: ['minimal', 'luxury', 'earthy', 'bold', 'retro'] },
-  { id: 'creator',  icon: '📱', styles: ['bold', 'retro', 'minimal', 'earthy', 'luxury'] },
-  { id: 'identity', icon: '✨', styles: ['earthy', 'luxury', 'retro', 'minimal', 'bold'] },
+  { id: 'beginner', styles: ['minimal', 'earthy', 'retro', 'luxury', 'bold'] },
+  { id: 'business', styles: ['minimal', 'luxury', 'earthy', 'bold', 'retro'] },
+  { id: 'creator', styles: ['bold', 'retro', 'minimal', 'earthy', 'luxury'] },
+  { id: 'identity', styles: ['earthy', 'luxury', 'retro', 'minimal', 'bold'] },
 ];
 
 /* الأساليب الخمسة */

@@ -77,7 +77,7 @@ async function loadGalleryGrid() {
             <span><strong>${name}</strong><small>${author ? t('gallery.by', { name: author }) : ''}</small></span>
             <button type="button" class="like-btn ${isLiked ? 'liked' : ''}" data-like="${p.id}"
                     aria-pressed="${isLiked}" aria-label="${t('gallery.like')}">
-              ♥ <span>${p.likes_count}</span>
+              <span>${p.likes_count}</span>
             </button>
           </div>
         </div>`;
