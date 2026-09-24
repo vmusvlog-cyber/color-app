@@ -268,15 +268,14 @@ function roundedRect(ctx, x, y, w, h, r) {
    ملف PDF في الحقيقة نص منظم بطريقة معينة + بيانات الصورة.
    ========================================================================= */
 function makePdfFromCanvas(canvas) {
-  // صورة JPEG بخلفية بيضاء (JPEG لا يدعم الشفافية، وخلفيتنا بيضاء أصلاً)
-  const jpegBase64 = canvas.toDataURL('image/jpeg', 0.95).split(',')[1];
-  const jpeg = Uint8Array.from(atob(jpegBase64), (ch) => ch.charCodeAt(0));
+  return makePdfFromCanvases([canvas]);
+}
 
-  // حجم الصفحة بالنقاط (الصورة مرسومة بضعف الدقة، لذلك نقسم على 2)
-  const pageW = Math.round(canvas.width / 2);
-  const pageH = Math.round(canvas.height / 2);
-  const drawCommands = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q`;
-
+/*
+  ملف PDF بعدة صفحات: كل لوحة رسم (canvas) = صفحة واحدة (يستخدمه "دليل الهوية").
+  كل صفحة تحتاج 3 كائنات: الصفحة نفسها، وصورتها (JPEG)، وأمر رسم الصورة.
+*/
+function makePdfFromCanvases(canvases) {
   const encoder = new TextEncoder();
   const parts = [];      // أجزاء الملف بالترتيب
   const offsets = [];    // مكان بداية كل "كائن" داخل الملف (يحتاجه قارئ PDF)
@@ -288,15 +287,31 @@ function makePdfFromCanvas(canvas) {
   };
   const startObject = () => offsets.push(length);
 
+  // أرقام الكائنات: 1 الفهرس، 2 قائمة الصفحات، ثم لكل صفحة 3 أرقام متتالية
+  const pageObj = (i) => 3 + i * 3;
+  const kids = canvases.map((_, i) => `${pageObj(i)} 0 R`).join(' ');
+
   add('%PDF-1.4\n');
   startObject(); add('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
-  startObject(); add('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
-  startObject(); add(`3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`);
-  startObject();
-  add(`4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
-  add(jpeg);
-  add('\nendstream\nendobj\n');
-  startObject(); add(`5 0 obj\n<< /Length ${drawCommands.length} >>\nstream\n${drawCommands}\nendstream\nendobj\n`);
+  startObject(); add(`2 0 obj\n<< /Type /Pages /Kids [${kids}] /Count ${canvases.length} >>\nendobj\n`);
+
+  canvases.forEach((canvas, i) => {
+    // صورة JPEG بخلفية بيضاء (JPEG لا يدعم الشفافية)
+    const jpegBase64 = canvas.toDataURL('image/jpeg', 0.92).split(',')[1];
+    const jpeg = Uint8Array.from(atob(jpegBase64), (ch) => ch.charCodeAt(0));
+    // حجم الصفحة بالنقاط (الصورة مرسومة بضعف الدقة، لذلك نقسم على 2)
+    const pageW = Math.round(canvas.width / 2);
+    const pageH = Math.round(canvas.height / 2);
+    const drawCommands = `q ${pageW} 0 0 ${pageH} 0 0 cm /Im0 Do Q`;
+    const n = pageObj(i);
+
+    startObject(); add(`${n} 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageW} ${pageH}] /Resources << /XObject << /Im0 ${n + 1} 0 R >> >> /Contents ${n + 2} 0 R >>\nendobj\n`);
+    startObject();
+    add(`${n + 1} 0 obj\n<< /Type /XObject /Subtype /Image /Width ${canvas.width} /Height ${canvas.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpeg.length} >>\nstream\n`);
+    add(jpeg);
+    add('\nendstream\nendobj\n');
+    startObject(); add(`${n + 2} 0 obj\n<< /Length ${drawCommands.length} >>\nstream\n${drawCommands}\nendstream\nendobj\n`);
+  });
 
   // فهرس المواقع في آخر الملف
   const xrefStart = length;

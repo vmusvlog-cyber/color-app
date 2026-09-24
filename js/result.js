@@ -394,13 +394,13 @@ function renderFontsModal(colors, style) {
 }
 
 /* بطاقة زوج خطوط واحد، مكتوبة بألوان اللوحة نفسها */
-function fontCardHtml(pair, i, colors) {
+function fontCardHtml(pair, i, colors, selectedIndex = state.fontIndex) {
   const bg = colors[0];
   const headColor = readableOn(bg, colors);
   // لون النص: لون آخر من اللوحة يُقرأ على الخلفية، وإلا نفس لون العنوان
   const bodyColor = colors.slice(1).find((c) => c !== headColor && contrastRatio(c, bg) >= 4.5) || headColor;
   const fonts = currentLang === 'ar' ? pair.ar : pair.en; // نعرض المثال بلغة الواجهة
-  const selected = i === state.fontIndex;
+  const selected = i === selectedIndex;
   return `
     <button type="button" class="font-card ${selected ? 'selected' : ''}" data-index="${i}" aria-pressed="${selected}">
       <span class="font-sample" style="background:${bg}">

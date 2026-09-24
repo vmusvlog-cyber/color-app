@@ -58,6 +58,13 @@ js/prompts.js     Ready English image prompts (4 per place) with the palette's H
                   for ChatGPT/Gemini; Unsplash search words. (English-only by owner decision,
                   so these templates live here, not in i18n.js)
 js/unsplash.js    Unsplash: search links (no key) and in-app photos + credits (with key)
+js/brand.js       "Build your visual identity" (#/brand): 4 steps — colors (photo OR 3 questions
+                  → 3 palettes), font (6 pairs), details (brand name required, text ≤250 chars,
+                  optional contact + socials), guide (12 page previews, one PDF, copyable prompts)
+js/brandpages.js  Canvas drawing of the 12 A4 guide pages: cover, logo (wordmark/monogram/mark),
+                  colors, fonts, business card, stationery, email signature, Instagram (profile,
+                  highlight covers, post, story), Facebook & LinkedIn, TikTok & YouTube (cover,
+                  thumbnail, text on video, hooks), website, ready prompts
 js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
 js/app.js         State, home/methods/ready/free screens, navigation (router), startApp
 supabase/schema.sql  Tables + Row Level Security (run once in Supabase SQL Editor)
@@ -145,6 +152,10 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       Free. The old methods/describe screens and the drawn scenes (scenes.js) were removed
       (#/methods and #/describe now open the questions). Answers set the Refine panel defaults and
       go into the prompts; new preview kinds video / photo / expo with 4 prompts each.
+- [x] Brand identity kit (owner's answers): home card "Build your visual identity" (green, 2nd
+      row). Output = ONE multi-page PDF brand guide (makePdfFromCanvases in download.js). The
+      logo is a text logo (wordmark, 2-letter monogram, 1-letter mark); a drawn logo comes from
+      the ready prompt. No sign-up gate on this PDF (yet).
 - [ ] Phase 6
 
 ---

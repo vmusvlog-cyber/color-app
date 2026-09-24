@@ -184,6 +184,15 @@ function renderHome() {
         </span>
         <span class="btn btn-primary upload-go">${t('home.upload.go')}</span>
       </a>
+      <!-- "ابنِ هويتك البصرية": دليل هوية كامل PDF -->
+      <a class="audience-card card-brand" href="#/brand">
+        <span class="brand-swatches" aria-hidden="true">${HOME_COLORS.map((c) => `<i style="background:${c}"></i>`).join('')}</span>
+        <span class="upload-text">
+          <h2>${t('home.brand.title')}</h2>
+          <p>${t('home.brand.desc')}</p>
+        </span>
+        <span class="btn upload-go brand-go">${t('home.brand.go')}</span>
+      </a>
       ${AUDIENCES.map((a) => `
         <a class="audience-card card-${a.id}" href="#/quiz/${a.id}">
           <h2>${t('aud.' + a.id + '.title')}</h2>
@@ -485,7 +494,7 @@ function render(keepScroll) {
   renderTopbar();
   const { screen, audience, params } = parseHash();
   // الواجهة الأولى لها ألوانها الخاصة؛ باقي الشاشات تبقى بيضاء هادئة
-  const known = ['methods','ready','free','result','describe','quiz','mycolors','options','upload','saved','gallery'];
+  const known = ['brand', 'methods','ready','free','result','describe','quiz','mycolors','options','upload','saved','gallery'];
   document.body.classList.toggle('home-page', !known.includes(screen));
 
   // الشاشتان القديمتان (طرق البدء، مبتدئ أم عندك ألوان) صارتا أسئلة القسم مباشرة
@@ -499,6 +508,7 @@ function render(keepScroll) {
   else if (screen === 'upload') renderUpload(audience);
   else if (screen === 'saved') renderSaved();
   else if (screen === 'gallery') renderGallery();
+  else if (screen === 'brand') renderBrand();
   else renderHome();
 
   if (!keepScroll) window.scrollTo(0, 0);
