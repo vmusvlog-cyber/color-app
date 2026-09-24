@@ -29,6 +29,11 @@ const state = {
   fontStyle: null,                // الأسلوب الذي اختير له زوج الخطوط
   projectName: '',                // اسم المشروع في المعاينات
   whyOpen: false,                 // هل شرح "لماذا هذه الألوان؟" مفتوح
+  // المرحلة 3
+  upload: null,                   // الصورة المرفوعة وألوانها
+  view: { gradients: false, dark: false, print: false }, // خيارات العرض
+  culture: null,                  // منطقة الجمهور المختارة (أو null)
+  cultureOpen: false,             // هل لوحة الثقافة مفتوحة
 };
 
 const app = document.getElementById('app');
@@ -151,7 +156,7 @@ function renderHome() {
    ========================================================================= */
 function renderMethods(audience) {
   const methods = [
-    { id: 'upload',   icon: '🖼️', soon: true },   // المرحلة 3
+    { id: 'upload',   icon: '🖼️', soon: false },
     { id: 'describe', icon: '💬', soon: false },
     { id: 'ready',    icon: '🎨', soon: false },
     { id: 'free',     icon: '✋', soon: false },
@@ -477,6 +482,7 @@ function render(keepScroll) {
   else if (screen === 'quiz') renderQuiz(audience, !keepScroll); // تبديل اللغة لا يعيد الاستبيان من البداية
   else if (screen === 'mycolors') renderMyColors(audience);
   else if (screen === 'options') renderOptions(audience, params);
+  else if (screen === 'upload') renderUpload(audience);
   else renderHome();
 
   if (!keepScroll) window.scrollTo(0, 0);

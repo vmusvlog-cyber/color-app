@@ -35,6 +35,8 @@ js/generator.js   Palette generation (quiz answers / user colors), style detecti
 js/fonts.js       Font pairings per style (Google Fonts) and the font loader
 js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
 js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
+js/image.js       "Upload image": in-browser k-means color extraction, adjusted options
+js/variants.js    Dark version, print-safe version + CMYK, gradients, culture notes/adjust
 js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
 js/app.js         State, home/methods/ready/free screens, navigation (router)
 ```
@@ -44,7 +46,8 @@ js/app.js         State, home/methods/ready/free screens, navigation (router)
 - [x] Phase 2: Quiz (5 questions, drawn images), "has colors" input (name/HEX/wheel),
       3 palettes, font pairings, previews. Also added (owner agreed): "Why these colors?"
       and "stand out from competitors".
-- [ ] Phase 3
+- [x] Phase 3: Image upload + k-means extraction (keep or adjusted suggestions), toggles
+      (gradients, dark version, for print with CMYK), culture icon (6 regions, notes + adjust).
 - [ ] Phase 4
 - [ ] Phase 5
 - [ ] Phase 6

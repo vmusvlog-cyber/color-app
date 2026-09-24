@@ -208,7 +208,9 @@ function renderOptions(audience, params) {
 
   // المعلومات التي ننقلها لشاشة النتيجة (المجال والأسلوب)
   const extra = (params.ind ? '&ind=' + params.ind : '') + (params.s ? '&s=' + params.s : '');
-  const backHref = params.mode === 'colors' ? '#/mycolors/' + audience.id : '#/describe/' + audience.id;
+  let backHref = '#/describe/' + audience.id;
+  if (params.mode === 'colors') backHref = '#/mycolors/' + audience.id;
+  if (params.mode === 'image') backHref = '#/upload/' + audience.id;
 
   app.innerHTML = `
     ${backLink(backHref)}
@@ -247,6 +249,7 @@ function renderOptions(audience, params) {
 
 /* يختار طريقة الصنع حسب المصدر: من الاستبيان أو من ألوانك */
 function makeOptions(params) {
+  if (params.mode === 'image') return generateFromImage(paramToColors(params.base));
   if (params.mode === 'colors') {
     const bases = paramToColors(params.base);
     return generateAroundColors(bases.length ? bases : ['#3A86FF']);
