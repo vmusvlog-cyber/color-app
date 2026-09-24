@@ -11,5 +11,5 @@
    جهاز المستخدم، والمعرض مخفي.
    ========================================================================= */
 
-const SUPABASE_URL = '';       // مثال: 'https://abcdefgh.supabase.co'
-const SUPABASE_ANON_KEY = '';  // مثال: 'eyJhbGciOi...'
+const SUPABASE_URL = 'https://ffdpcfqtnldxgcgjffbz.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_xSNBgw6ZqaZNFMxiXlCXAA_tUBpfBpe'; // المفتاح العام (Publishable)
