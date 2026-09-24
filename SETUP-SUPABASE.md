@@ -34,7 +34,7 @@
 2. اضغط **Add new site** ← **Import an existing project** ← **GitHub**.
 3. اختر مستودع **color-app**.
 4. في الإعدادات:
-   - **Branch to deploy:** `claude/color-palette-app-v35p20`
+   - **Branch to deploy:** `main`
    - **Build command:** اتركه فارغاً
    - **Publish directory:** اكتب `.` (نقطة فقط)
 5. اضغط **Deploy**. بعد دقيقة يعطيك رابطاً مثل `https://xxxx.netlify.app`.
@@ -66,7 +66,7 @@
 المفتاح العام مسموح أن يكون ظاهراً، لأن قواعد الأمان في قاعدة البيانات هي التي تحمي البيانات.
 
 **أو بنفسك على GitHub:**
-1. افتح ملف `js/config.js` في المستودع (على الفرع `claude/color-palette-app-v35p20`).
+1. افتح ملف `js/config.js` في المستودع (على الفرع `main`).
 2. اضغط أيقونة القلم ✏️ (Edit).
 3. ضع القيمتين بين علامات التنصيص:
    ```js

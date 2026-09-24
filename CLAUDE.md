@@ -22,7 +22,8 @@ The owner is a complete beginner with no coding experience.
 - **Images:** mood and style pictures are drawn in code (SVG), not photos (owner agreed).
 - **Backend (Phase 5, owner agreed):** Supabase (free tier) with magic-link email sign-in.
   supabase-js is loaded from jsDelivr (pinned). If keys are empty or the library fails to
-  load, the app runs in local-only mode. Hosting: Netlify connected to the GitHub branch.
+  load, the app runs in local-only mode. Hosting: Netlify (https://loquacious-fairy-3a37e7.netlify.app)
+  deploys the `main` branch automatically; the owner agreed to keep `main` updated with the app.
   The claude.ai preview cannot reach Supabase (its CSP blocks it), so test cloud features
   on Netlify.
 
