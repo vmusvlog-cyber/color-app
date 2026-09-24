@@ -165,12 +165,15 @@ function generateFromImage(colors) {
   const darkest = byLight[byLight.length - 1];
   const vivid = [...hsl].sort((a, b) => b.s - a.s).find((c) => c !== lightest && c !== darkest) || hsl[0];
 
-  // الخلفية: أفتح لون بعد تفتيحه وتهدئته، النص: أغمق لون، التمييز: أقوى لون
+  // الترتيب: خلفية فاتحة، ثم أقوى لون (رئيسي)، ثم لون آخر من الصورة (تمييز)،
+  // ثم الداكن للنصوص في المكان الرابع (حتى لا تبدو اللوحة غامقة)
+  const others = hsl.filter((c) => c !== lightest && c !== darkest && c !== vivid);
   const tidy = [
     hslToHex(lightest.h, Math.min(lightest.s, 25), Math.max(lightest.l, 93)),
-    hslToHex(darkest.h, darkest.s, Math.min(darkest.l, 22)),
     hslToHex(vivid.h, Math.max(vivid.s, 55), clamp(vivid.l, 40, 60)),
-    ...hsl.filter((c) => c !== lightest && c !== darkest && c !== vivid).map((c) => c.hex),
+    ...others.slice(0, 1).map((c) => hslToHex(c.h, Math.max(c.s, 35), clamp(c.l, 35, 70))),
+    hslToHex(darkest.h, darkest.s, Math.min(darkest.l, 22)),
+    ...others.slice(1).map((c) => c.hex),
   ].slice(0, 5);
 
   const around = generateAroundColors([vivid.hex]);

@@ -88,6 +88,7 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       Result previews: "👁 Where do you want to see your colors?" picker with 8 previews
       (logo, social, room/facade, web, app, card, packaging, menu); only the chosen one shows,
       auto-picked from the answers.
+- [x] Redesign Part A done (colors). Part B and C still to do.
 - [ ] Redesign (owner's 20 answers, customers' feedback "colors too dark, no strength"):
       Part A — colors: background always light (only Luxury stays dark, or user picks dark);
       remove all 60-30-10 percentages; palette size 3/4/5 chosen by user (default 5); result
@@ -133,7 +134,8 @@ Earthy (beige/olive/brown/terracotta), Retro/vintage (warm faded tones).
 
 ## Result screen
 - Each color is a Polaroid-style card: white frame, wider bottom showing color name + HEX.
-- Show the 60-30-10 ratio visually on the cards.
+- ~~Show the 60-30-10 ratio~~ (removed by the owner in the redesign: no percentages; colors
+  shown as one big strip; background always light except Luxury).
 - "Regenerate" button on each color/background.
 - Optional "Why these colors?" button with meaning and feeling.
 - At least 3 font pairings (headings + body, Arabic and English Google Fonts) with short advice.

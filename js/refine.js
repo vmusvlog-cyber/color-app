@@ -24,6 +24,18 @@ const FEELINGS = {
   health:   { hue: [145, 170] },            // صحة: أخضر نعناعي
 };
 
+/* حرارة كل إحساس: عند اختيار "حار" نخفي المشاعر الباردة، والعكس (منع التعارض).
+   الإبداع والطبيعة يناسبان الاثنين. */
+const FEELING_TEMP = {
+  trust: 'cool', pro: 'cool', calm: 'cool', health: 'cool', luxury: 'cool',
+  energy: 'warm', excite: 'warm', warm: 'warm', joy: 'warm',
+};
+
+/* المشاعر المتاحة حسب زر حار/بارد */
+function feelingsFor(temp) {
+  return Object.keys(FEELINGS).filter((f) => !temp || !FEELING_TEMP[f] || FEELING_TEMP[f] === temp);
+}
+
 /* قيم كل اختيار بالترتيب (بعد "تلقائي") */
 const REFINE_OPTIONS = {
   feel: Object.keys(FEELINGS),
@@ -41,7 +53,7 @@ function defaultRefine() {
 
 /* هل اختار المستخدم أي شيء؟ */
 function hasRefine(refine) {
-  return Object.values(refine).some((v) => v);
+  return Object.entries(refine).some(([k, v]) => k !== 'temp' && v); // حار/بارد له زر خاص في الأعلى
 }
 
 /* كم ندور على العجلة لكل نظام تناسق (يُستخدم عند صنع لوحات الاستبيان) */
@@ -60,14 +72,28 @@ function isChromatic(hsl) {
 function applyRefine(colors, refine, locked = [], options = {}) {
   let out = [...colors];
   const canChange = (i) => !locked.includes(colors[i]);
+  const style = options.style;
 
   if (refine.feel && !options.skipFeeling) out = applyFeeling(out, refine.feel, canChange);
   if (refine.harmony) out = applyHarmony(out, refine.harmony, canChange, locked);
-  if (refine.temp) out = applyTemperature(out, refine.temp, canChange);
   if (refine.sat) out = applySaturation(out, refine.sat, canChange);
   if (refine.value) out = applyValue(out, refine.value, canChange);
+  // الخلفية فاتحة دائماً، إلا في الأسلوب الفاخر أو إذا اختار المستخدم "داكنة"
+  if (refine.value !== 'dark' && style !== 'luxury') out = keepLightBackground(out, canChange);
+  // "حار أو بارد" في الآخر، حتى يلوّن كل الألوان مهما فعلت الاختيارات قبله
+  if (refine.temp) out = applyTemperature(out, refine.temp, canChange);
+  // التباين في النهاية، لأن الخطوات السابقة قد تغيّر وضوح لون التمييز
   if (refine.contrast) out = applyContrast(out, refine.contrast, canChange);
   return uniqueColors(out);
+}
+
+/* يجعل الخلفية (أول لون) فاتحة إن كانت داكنة، مع إبقاء درجة لونها */
+function keepLightBackground(colors, canChange) {
+  const bg = hexToHsl(colors[0]);
+  if (bg.l >= 86 || !canChange(0)) return colors;
+  const out = [...colors];
+  out[0] = hslToHex(bg.h, Math.min(bg.s, 30), 95);
+  return out;
 }
 
 /* الإحساس: نجعل لون التمييز من درجة الإحساس المختار */
@@ -124,18 +150,34 @@ function applyHarmony(colors, harmony, canChange, locked) {
   return out;
 }
 
-/* حار أو بارد: ننقل الألوان الملوّنة إلى النصف المطلوب من العجلة */
-function applyTemperature(colors, temp, canChange) {
+/*
+  حار أو بارد: كل الألوان تصبح حارة أو باردة (بقرار صاحب التطبيق).
+  - الألوان الملوّنة: ننقلها إلى النصف المطلوب من عجلة الألوان
+  - المحايدة (الأبيض والرمادي والداكن): نعطيها لمسة دافئة (كريمي، بيج، بني)
+    أو باردة (أبيض مزرق، رمادي بارد، كحلي داكن)
+*/
+function applyTemperature(colors, temp, canChange = () => true) {
   const isWarm = (h) => h <= 70 || h >= 330;
   const isCool = (h) => h >= 150 && h <= 280;
   return colors.map((hex, i) => {
     const c = hexToHsl(hex);
-    if (!canChange(i) || c.s < 12) return hex;
+    if (!canChange(i)) return hex;
+    if (c.s < 12) {
+      const hue = temp === 'warm' ? (c.l >= 80 ? 40 : 28) : 212;
+      const sat = c.l >= 80 ? (temp === 'warm' ? 45 : 35) : c.l < 30 ? 25 : 14;
+      return hslToHex(hue, sat, c.l);
+    }
     const ok = temp === 'warm' ? isWarm(c.h) : isCool(c.h);
     if (ok) return hex;
-    let h = (c.h + 180) % 360; // نجرب الجهة المقابلة من العجلة
-    if (temp === 'warm' && !isWarm(h)) h = h < 200 ? 70 : 330;
-    if (temp === 'cool' && !isCool(h)) h = h < 150 ? 150 : 280;
+    // "نضغط" النصف الآخر من العجلة داخل النصف المطلوب بنفس الترتيب،
+    // حتى تبقى الألوان مختلفة عن بعضها (ولا تتجمع كلها عند لون واحد)
+    let h;
+    if (temp === 'warm') {
+      h = 330 + ((c.h - 70) / 260) * 100;          // من 70..330 إلى 330..430 (= 330..70)
+    } else {
+      const d = (c.h - 280 + 360) % 360;             // من 280..150 (عبر الأحمر) إلى 150..280
+      h = 150 + (d / 230) * 130;
+    }
     return hslToHex(h, c.s, c.l);
   });
 }
@@ -219,14 +261,14 @@ function feelingDot(feel) {
 
 /* يرسم اللوحة كاملة */
 function refinePanelHtml(refine) {
-  const row = (key) => `
+  const row = (key) => key === 'size' ? sizeRow() : `
     <div class="refine-row">
       <div class="refine-label">
         <strong>${t('refine.' + key)}</strong>
         <small>${t('refine.' + key + '.hint')}</small>
       </div>
       <div class="choice-chips">
-        ${[''].concat(REFINE_OPTIONS[key]).map((v) => `
+        ${[''].concat(key === 'feel' ? feelingsFor(refine.temp) : REFINE_OPTIONS[key]).map((v) => `
           <button type="button" class="choice-chip small refine-chip ${refine[key] === v ? 'selected' : ''}"
                   data-refine="${key}" data-value="${v}" aria-pressed="${refine[key] === v}">
             ${key === 'feel' && v ? feelingDot(v) : ''}
@@ -246,12 +288,31 @@ function refinePanelHtml(refine) {
         ${hasRefine(refine) ? `<button type="button" class="btn btn-small" id="refine-reset">↺ ${t('refine.reset')}</button>` : ''}
       </div>
       <p class="small-hint">${t('refine.subtitle')}</p>
-      ${['feel', 'temp', 'harmony', 'sat', 'value', 'contrast'].map(row).join('')}
+      ${['size', 'feel', 'harmony', 'sat', 'value', 'contrast'].map(row).join('')}
     </section>`;
+}
+
+/* صف "عدد الألوان": 3 / 4 / 5 */
+function sizeRow() {
+  return `
+    <div class="refine-row">
+      <div class="refine-label">
+        <strong>${t('refine.size')}</strong>
+        <small>${t('refine.size.hint')}</small>
+      </div>
+      <div class="choice-chips">
+        ${[3, 4, 5].map((n) => `
+          <button type="button" class="choice-chip small refine-chip ${state.paletteSize === n ? 'selected' : ''}"
+                  data-size-pick="${n}" aria-pressed="${state.paletteSize === n}">${t('ready.count', { n })}</button>`).join('')}
+      </div>
+    </div>`;
 }
 
 /* يربط أزرار اللوحة: عند أي ضغطة نحدّث الاختيارات ثم نستدعي onChange */
 function bindRefinePanel(onChange) {
+  document.querySelectorAll('[data-size-pick]').forEach((btn) => {
+    btn.addEventListener('click', () => { state.paletteSize = Number(btn.dataset.sizePick); onChange(); });
+  });
   document.querySelectorAll('[data-refine]').forEach((btn) => {
     btn.addEventListener('click', () => {
       state.refine[btn.dataset.refine] = btn.dataset.value;
@@ -259,5 +320,5 @@ function bindRefinePanel(onChange) {
     });
   });
   const reset = document.getElementById('refine-reset');
-  if (reset) reset.addEventListener('click', () => { state.refine = defaultRefine(); onChange(); });
+  if (reset) reset.addEventListener('click', () => { state.refine = { ...defaultRefine(), temp: state.refine.temp }; onChange(); });
 }

@@ -23,7 +23,6 @@ function renderResult(audience, params) {
   // colors = الألوان الأصلية (من الرابط)
   // shown  = ما نعرضه فعلاً بعد تطبيق "نسخة داكنة" أو "للطباعة"
   const shown = applyView(colors);
-  const weights = ratioWeights(colors.length);
   syncColorHistory(colors); // سجل الألوان السابقة لكل بطاقة (للسهمين)
   const hist = state.colorHistory; // (ليس history — هذا الاسم يستخدمه المتصفح)
   const title = params.p ? t('pal.' + params.p) : t('result.title');
@@ -57,44 +56,33 @@ function renderResult(audience, params) {
       ${cultureHtml(colors)}
     </section>
 
-    <!-- 1) بطاقات البولارويد: إطار أبيض وأسفل أعرض فيه الاسم والكود -->
-    <div class="polaroid-row">
+    <!-- 1) شريط الألوان الكبير: كل لون عمود طويل، وفيه اسمه وكوده وسهما التغيير -->
+    <div class="color-strip">
       ${shown.map((c, i) => `
-        <figure class="polaroid">
-          <div class="polaroid-color" style="background:${c}; color:${isLight(c) ? '#1a1a1a' : '#ffffff'}">
-            <span class="ratio-badge">${formatPercent(weights[i])}</span>
-          </div>
-          <figcaption>
+        <div class="strip-col" style="background:${c}; color:${isLight(c) ? '#1a1a1a' : '#ffffff'}">
+          <span class="strip-role">${roleName(i, c)}</span>
+          <div class="strip-info">
             <strong class="color-name">${colorName(c)}</strong>
             <button type="button" class="hex-btn" data-hex="${c}" dir="ltr">${c}</button>
             ${state.view.print ? `<span class="cmyk" dir="ltr">${cmykText(c)}</span>` : ''}
-            <span class="role">${roleName(i, c)}</span>
-            <!-- سهمان: السابق يرجعك للون قبله، والتالي يعطيك لوناً آخر -->
-            <div class="regen-nav">
-              <button type="button" class="regen-arrow" data-prev="${i}" ${hist.pos[i] === 0 ? 'disabled' : ''}
-                      aria-label="${t('result.prevColor')}" title="${t('result.prevColor')}">
-                <span class="back-arrow" aria-hidden="true">←</span>
-              </button>
-              <span class="regen-count" dir="ltr" ${hist.lists[i].length > 1 ? '' : 'style="visibility:hidden"'}>
-                ${hist.pos[i] + 1}/${hist.lists[i].length}
-              </span>
-              <button type="button" class="regen-arrow" data-next="${i}"
-                      aria-label="${t('result.regenerate')}" title="${t('result.regenerate')}">
-                <span class="fwd-arrow" aria-hidden="true">→</span>
-              </button>
-            </div>
-          </figcaption>
-        </figure>
+          </div>
+          <!-- سهمان: السابق يرجعك للون قبله، والتالي يعطيك لوناً آخر -->
+          <div class="regen-nav">
+            <button type="button" class="regen-arrow" data-prev="${i}" ${hist.pos[i] === 0 ? 'disabled' : ''}
+                    aria-label="${t('result.prevColor')}" title="${t('result.prevColor')}">
+              <span class="back-arrow" aria-hidden="true">←</span>
+            </button>
+            <span class="regen-count" dir="ltr" ${hist.lists[i].length > 1 ? '' : 'style="visibility:hidden"'}>
+              ${hist.pos[i] + 1}/${hist.lists[i].length}
+            </span>
+            <button type="button" class="regen-arrow" data-next="${i}"
+                    aria-label="${t('result.regenerate')}" title="${t('result.regenerate')}">
+              <span class="fwd-arrow" aria-hidden="true">→</span>
+            </button>
+          </div>
+        </div>
       `).join('')}
     </div>
-
-    <section class="ratio-box">
-      <h2>${t('result.ratioTitle')}</h2>
-      <div class="ratio-bar">
-        ${shown.map((c, i) => `<span style="flex:${weights[i]}; background:${c}" title="${roleName(i, c)} ${formatPercent(weights[i])}"></span>`).join('')}
-      </div>
-      <p>${t('result.ratioHint')}</p>
-    </section>
 
     <!-- أزرار: تحميل، حفظ، مشاركة -->
     <div class="action-bar">
@@ -631,9 +619,10 @@ function sharePaletteLink(url, title) {
 
 /* ---------- خيارات العرض ---------- */
 
-/* يطبّق "نسخة داكنة" و"للطباعة" إن كانتا مفعّلتين */
+/* يطبّق زر حار/بارد (من الشريط العلوي) و"نسخة داكنة" و"للطباعة" إن كانت مفعّلة */
 function applyView(colors) {
   let out = colors;
+  if (state.refine.temp) out = applyTemperature(out, state.refine.temp);
   if (state.view.dark) out = darkPalette(out);
   if (state.view.print) out = printPalette(out);
   return out;

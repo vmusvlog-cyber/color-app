@@ -189,7 +189,7 @@ function triggerDownload(url, fileName) {
 }
 
 /* =========================================================================
-   رسم البطاقات على لوحة رسم (canvas) — نفس شكل البولارويد في الشاشة
+   رسم الألوان على لوحة رسم (canvas) — نفس شكل الشريط الكبير في الشاشة
    ========================================================================= */
 async function drawPaletteCanvas(colors, title) {
   const isAr = currentLang === 'ar';
@@ -199,9 +199,9 @@ async function drawPaletteCanvas(colors, title) {
 
   // القياسات (بالبكسل)
   const n = colors.length;
-  const cardW = 200, square = 172, cardH = 300, gap = 26, pad = 48;
-  const width = pad * 2 + n * cardW + (n - 1) * gap;
-  const height = 110 + cardH + 110;
+  const width = 1200, pad = 48, top = 110, stripH = 520;
+  const height = top + stripH + 80;
+  const colW = (width - pad * 2) / n;
   const scale = 2; // ضعف الدقة حتى تكون الصورة واضحة
 
   const canvas = document.createElement('canvas');
@@ -209,75 +209,43 @@ async function drawPaletteCanvas(colors, title) {
   canvas.height = height * scale;
   const ctx = canvas.getContext('2d');
   ctx.scale(scale, scale);
-  ctx.direction = isAr ? 'rtl' : 'ltr';
   ctx.textAlign = 'center';
 
   // الخلفية والعنوان
   ctx.fillStyle = '#FFFFFF';
   ctx.fillRect(0, 0, width, height);
+  ctx.direction = isAr ? 'rtl' : 'ltr';
   ctx.fillStyle = '#1C1C1E';
   ctx.font = `800 30px ${font}`;
   ctx.fillText(title, width / 2, 66);
 
-  const weights = ratioWeights(n);
-  const top = 110;
-
-  colors.forEach((hex, i) => {
-    // في العربية نرتب البطاقات من اليمين
-    const x = isAr ? width - pad - (i + 1) * cardW - i * gap : pad + i * (cardW + gap);
-
-    // إطار البطاقة الأبيض مع ظل خفيف
-    ctx.save();
-    ctx.shadowColor = 'rgba(0,0,0,0.14)';
-    ctx.shadowBlur = 20;
-    ctx.shadowOffsetY = 6;
-    ctx.fillStyle = '#FFFFFF';
-    roundedRect(ctx, x, top, cardW, cardH, 6);
-    ctx.fill();
-    ctx.restore();
-
-    // مربع اللون
-    const sx = x + (cardW - square) / 2, sy = top + 14;
-    ctx.fillStyle = hex;
-    ctx.fillRect(sx, sy, square, square);
-    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(sx + 0.5, sy + 0.5, square - 1, square - 1);
-
-    // نسبة 60-30-10 فوق اللون
-    ctx.fillStyle = isLight(hex) ? 'rgba(0,0,0,0.75)' : 'rgba(255,255,255,0.9)';
-    ctx.font = `800 18px ${font}`;
-    ctx.fillText(formatPercent(weights[i]), sx + square / 2, sy + 30);
-
-    // الاسم والكود والدور في الجزء السفلي الأعرض
-    const cx = x + cardW / 2;
-    ctx.fillStyle = '#1C1C1E';
-    ctx.font = `700 18px ${font}`;
-    ctx.fillText(colorName(hex), cx, sy + square + 34);
-    ctx.fillStyle = '#6B6B70';
-    ctx.font = `500 15px ui-monospace, Menlo, monospace`;
-    ctx.direction = 'ltr';                       // الكود يُكتب دائماً من اليسار (حتى لا تنتقل # لآخره)
-    ctx.fillText(hex, cx, sy + square + 58);
-    ctx.direction = isAr ? 'rtl' : 'ltr';
-    ctx.font = `400 13px ${font}`;
-    ctx.fillText(roleName(i, hex), cx, sy + square + 80);
-  });
-
-  // شريط 60-30-10
-  const barY = top + cardH + 36, barW = width - pad * 2;
-  let bx = isAr ? width - pad : pad;
+  // الشريط: زوايا دائرية للمجموعة كلها
   ctx.save();
-  roundedRect(ctx, pad, barY, barW, 18, 9);
+  roundedRect(ctx, pad, top, width - pad * 2, stripH, 18);
   ctx.clip();
   colors.forEach((hex, i) => {
-    const w = (weights[i] / 100) * barW;
+    // في العربية يبدأ الشريط من اليمين
+    const x = isAr ? width - pad - (i + 1) * colW : pad + i * colW;
     ctx.fillStyle = hex;
-    if (isAr) { bx -= w; ctx.fillRect(bx, barY, w + 0.5, 18); }
-    else { ctx.fillRect(bx, barY, w + 0.5, 18); bx += w; }
+    ctx.fillRect(x, top, colW + 0.5, stripH);
+
+    // الكتابة داخل العمود بلون واضح فوقه
+    const cx = x + colW / 2;
+    const textColor = isLight(hex) ? 'rgba(0,0,0,0.8)' : 'rgba(255,255,255,0.92)';
+    ctx.fillStyle = textColor;
+    ctx.direction = isAr ? 'rtl' : 'ltr';
+    ctx.font = `500 15px ${font}`;
+    ctx.fillText(roleName(i, hex), cx, top + 36);
+    ctx.font = `700 20px ${font}`;
+    ctx.fillText(colorName(hex), cx, top + stripH - 58);
+    ctx.font = `500 16px ui-monospace, Menlo, monospace`;
+    ctx.direction = 'ltr';                       // الكود يُكتب دائماً من اليسار (حتى لا تنتقل # لآخره)
+    ctx.fillText(hex, cx, top + stripH - 30);
   });
   ctx.restore();
 
   // التذييل
+  ctx.direction = isAr ? 'rtl' : 'ltr';
   ctx.fillStyle = '#9A9AA0';
   ctx.font = `500 14px ${font}`;
   ctx.fillText(t('dl.footer', { app: t('app.name') }), width / 2, height - 28);

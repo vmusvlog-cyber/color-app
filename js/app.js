@@ -15,7 +15,7 @@ const MAX_COLORS = 8; // أقصى عدد ألوان في لوحة الاختيا
 const state = {
   readyStyle: null,       // الأسلوب المختار في اللوحات الجاهزة
   readyAudience: null,    // القسم الذي اختير له الأسلوب (عند تغيير القسم نرجع للمقترح)
-  readySize: 5,           // 3 أو 5 ألوان
+  paletteSize: 5,         // عدد الألوان في كل لوحة: 3 أو 4 أو 5 (يختاره المستخدم)
   freePalette: [],        // ألوان لوحة الاختيار الحر
   freeSelected: null,     // رقم اللون المحدد في اللوحة (للحذف)
   suggestions: [],        // ألوان شريط الاقتراحات
@@ -83,29 +83,17 @@ function backLink(href) {
   return `<a class="back-link" href="${href}"><span class="back-arrow" aria-hidden="true">←</span> ${t('common.back')}</a>`;
 }
 
-/* نسب قاعدة 60-30-10 حسب عدد الألوان.
-   الأول 60%، الثاني 30%، والباقي يتقاسم 10%. */
-function ratioWeights(count) {
-  if (count === 1) return [100];
-  if (count === 2) return [70, 30];
-  const accentShare = 10 / (count - 2);
-  return [60, 30, ...Array(count - 2).fill(accentShare)];
-}
 
-/* اسم دور اللون في البراند: رئيسي / ثانوي / تمييز / محايد / مساعد
-   الألوان الإضافية (بعد الثالث): الهادئ منها "محايد" للخلفيات، والملوّن "مساعد" */
+/* اسم دور اللون: خلفية / رئيسي / تمييز / محايد / مساعد
+   الألوان الإضافية (بعد الثالث): الهادئ منها "محايد" (للنصوص)، والملوّن "مساعد" */
 function roleName(index, hex) {
-  if (index === 0) return t('role.main');
-  if (index === 1) return t('role.secondary');
+  if (index === 0) return t('role.bg');
+  if (index === 1) return t('role.main');
   if (index === 2) return t('role.accent');
   if (hex && hexToHsl(hex).s < 20) return t('role.neutral');
   return t('role.support');
 }
 
-/* يكتب النسبة بشكل جميل: 60 ← "60%"، 3.333 ← "3.3%" */
-function formatPercent(n) {
-  return Math.round(n * 10) / 10 + '%';
-}
 
 /* =========================================================================
    الشريط العلوي (اسم التطبيق + زر تغيير اللغة)
@@ -118,15 +106,42 @@ function renderTopbar() {
       ${t('app.name')}
     </a>
     <nav class="top-actions">
+      <!-- زر حار/بارد ثابت: يغيّر الألوان في أي وقت. الضغط على المختار يرجعه "تلقائي" -->
+      <span class="temp-switch" role="group" aria-label="${t('temp.title')}">
+        ${['warm', 'cool'].map((v) => `
+          <button type="button" class="${state.refine.temp === v ? 'on' : ''}" data-temp="${v}"
+                  aria-pressed="${state.refine.temp === v}" title="${t('temp.' + v)}">
+            ${v === 'warm' ? '🔥' : '❄️'}<span class="nav-text"> ${t('temp.' + v)}</span>
+          </button>`).join('')}
+      </span>
       <a class="lang-btn" href="#/gallery">🖼 <span class="nav-text">${t('nav.gallery')}</span></a>
       <a class="lang-btn" href="#/saved">♡ <span class="nav-text">${t('nav.saved')}</span>${savedCount ? ` <span class="count">${savedCount}</span>` : ''}</a>
       <button class="lang-btn" id="lang-btn" type="button">${t('lang.switch')}</button>
     </nav>
   `;
+  document.querySelectorAll('[data-temp]').forEach((btn) => {
+    btn.addEventListener('click', () => setTemperature(btn.dataset.temp));
+  });
   document.getElementById('lang-btn').addEventListener('click', () => {
     setLang(currentLang === 'ar' ? 'en' : 'ar');
     render(true);
   });
+}
+
+/* يغيّر حار/بارد لكل التطبيق. ونمنع التعارض: إن كان الإحساس المختار
+   من الحرارة الأخرى (مثل "ثقة" الباردة مع "حار") نرجعه "تلقائي" */
+function setTemperature(temp) {
+  state.refine.temp = state.refine.temp === temp ? '' : temp;
+  const feel = state.refine.feel;
+  if (feel && !feelingsFor(state.refine.temp).includes(feel)) {
+    state.refine.feel = '';
+    toast(t('temp.feelReset', { feel: t('refine.feel.' + feel) }));
+  }
+  if (state.quiz.answers.feel && !['auto', ...feelingsFor(state.refine.temp)].includes(state.quiz.answers.feel)) {
+    delete state.quiz.answers.feel;
+  }
+  state.suggestions = []; // اقتراحات الاختيار الحر تتجدد بالحرارة الجديدة
+  render(true);
 }
 
 /* يضبط اتجاه الصفحة (يمين/يسار) ولغتها */
@@ -213,7 +228,7 @@ function renderReady(audience) {
   // اللوحات الجاهزة بعد تطبيق اختيارات "دقّق النتيجة" (إن وُجدت)
   const palettes = READY_PALETTES
     .filter((p) => p.style === state.readyStyle)
-    .map((p) => ({ ...p, colors: applyRefine(p.colors, state.refine) }));
+    .map((p) => ({ ...p, colors: applyRefine(p.colors, state.refine, [], { style: p.style }) }));
 
   app.innerHTML = `
     ${backLink('#/methods/' + audience.id)}
@@ -234,20 +249,13 @@ function renderReady(audience) {
 
     <div class="ready-bar">
       <p class="style-desc">${t('style.' + state.readyStyle + '.desc')}</p>
-      <div class="size-toggle" role="group" aria-label="${t('ready.size')}">
-        ${[3, 5].map((n) => `
-          <button type="button" class="${state.readySize === n ? 'active' : ''}" data-size="${n}">
-            ${t('ready.count', { n })}
-          </button>
-        `).join('')}
-      </div>
     </div>
 
     ${refinePanelHtml(state.refine)}
 
     <div class="palette-grid">
       ${palettes.map((p) => {
-        const colors = p.colors.slice(0, state.readySize);
+        const colors = p.colors.slice(0, state.paletteSize);
         return `
           <a class="palette-tile" href="#/result/${audience.id}?c=${colorsToParam(colors)}&p=${p.id}&s=${p.style}&from=ready">
             <div class="tile-strip">
@@ -263,9 +271,6 @@ function renderReady(audience) {
   // الضغط على أسلوب أو عدد ألوان يعيد رسم الشاشة
   app.querySelectorAll('.style-tab').forEach((btn) => {
     btn.addEventListener('click', () => { state.readyStyle = btn.dataset.style; renderReady(audience); });
-  });
-  app.querySelectorAll('.size-toggle button').forEach((btn) => {
-    btn.addEventListener('click', () => { state.readySize = Number(btn.dataset.size); renderReady(audience); });
   });
   bindRefinePanel(() => renderReady(audience));
 }
@@ -405,7 +410,9 @@ function makeSourceSwatch(el) {
 
 /* ثمانية ألوان عشوائية جديدة لشريط الاقتراحات */
 function refreshSuggestions() {
-  state.suggestions = Array.from({ length: 8 }, randomNiceColor);
+  const colors = Array.from({ length: 8 }, randomNiceColor);
+  // إن كان زر حار/بارد مفعّلاً، تكون الاقتراحات كلها حارة أو باردة
+  state.suggestions = state.refine.temp ? applyTemperature(colors, state.refine.temp) : colors;
 }
 
 function renderSuggestions() {

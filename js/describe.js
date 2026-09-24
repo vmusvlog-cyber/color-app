@@ -41,14 +41,14 @@ function quizSteps(answers) {
     { key: 'industry', type: 'text', options: Object.keys(FIELD_QUESTIONS), label: 'ind.' },
     second,
     { key: 'use', type: 'text', options: field.use, label: 'use.', title: field.space ? 'q.use.home' : 'q.use' },
-    { key: 'feel', type: 'text', options: ['auto', ...Object.keys(FEELINGS)], label: 'refine.feel.' },
+    { key: 'feel', type: 'text', options: ['auto', ...feelingsFor(state.refine.temp)], label: 'refine.feel.' }, // بدون المشاعر المتعارضة مع حار/بارد
     { key: 'mood', type: 'mood', options: Object.keys(MOODS), label: 'mood.' },
     { key: 'style', type: 'style', options: STYLES, label: 'style.' },
   ];
 }
 
 /* قائمة المجالات (يستخدمها المعرض أيضاً في فلتر "المجال") */
-const QUIZ = quizSteps({});
+const QUIZ = [{ key: 'industry', options: Object.keys(FIELD_QUESTIONS) }];
 
 /* ---------- سؤال البداية: مبتدئ أم عندك ألوان؟ ---------- */
 function renderDescribe(audience) {
@@ -130,7 +130,7 @@ function renderQuiz(audience, fresh) {
         // انتهت الأسئلة ← نذهب لشاشة اللوحات الثلاث ومعنا الإجابات في الرابط
         const a = state.quiz.answers;
         // إجابة الإحساس تصبح أول اختيار في لوحة "دقّق النتيجة" (ويمكن تغييرها هناك)
-        state.refine = { ...defaultRefine(), feel: a.feel === 'auto' ? '' : a.feel };
+        state.refine = { ...defaultRefine(), temp: state.refine.temp, feel: a.feel === 'auto' ? '' : a.feel };
         state.previewKind = null; // المعاينة تُختار تلقائياً حسب الإجابات الجديدة
         const place = a.space ? '&space=' + a.space : '&who=' + a.who;
         location.hash = `#/options/${audience.id}?mode=quiz&ind=${a.industry}${place}&use=${a.use}&mood=${a.mood}&s=${a.style}`;
@@ -249,7 +249,7 @@ function renderChosenList() {
 /* ---------- 3 لوحات مقترحة ---------- */
 function renderOptions(audience, params) {
   // نصنع اللوحات مرة واحدة لكل رابط ولكل اختيارات "دقّق"، حتى لا تتغير عند تبديل اللغة
-  const key = location.hash + '|' + JSON.stringify(state.refine);
+  const key = location.hash + '|' + JSON.stringify(state.refine) + '|' + state.paletteSize;
   if (state.options.hash !== key) {
     state.options = { hash: key, list: makeOptions(params) };
   }
@@ -278,7 +278,7 @@ function renderOptions(audience, params) {
       ${state.options.list.map((opt) => `
         <a class="option-card" href="#/result/${audience.id}?c=${colorsToParam(opt.colors)}${extra}&from=options">
           <div class="option-strip">
-            ${opt.colors.map((c, i) => `<i style="background:${c}; flex:${ratioWeights(opt.colors.length)[i]}"></i>`).join('')}
+            ${opt.colors.map((c) => `<i style="background:${c}"></i>`).join('')}
           </div>
           <div class="option-info">
             <div>
@@ -333,8 +333,12 @@ function makeOptions(params) {
 
   // نطبّق باقي اختيارات "دقّق" على كل لوحة
   const skipFeeling = params.mode !== 'image' && params.mode !== 'colors'; // في الاستبيان استُخدم الإحساس أصلاً
-  return list.map((opt) => ({
-    harmony: refine.harmony || opt.harmony,
-    colors: applyRefine(opt.colors, refine, locked, { skipFeeling }),
-  }));
+  const style = params.mode === 'quiz' || !params.mode ? params.s : null;   // الخلفية الداكنة للفاخر فقط
+  return list.map((opt) => {
+    let colors = applyRefine(opt.colors, refine, locked, { skipFeeling, style });
+    // عدد الألوان الذي اختاره المستخدم (ألوانه الخاصة تبقى دائماً)
+    const keep = colors.filter((c) => locked.includes(c));
+    colors = [...new Set([...colors.slice(0, state.paletteSize), ...keep])].slice(0, Math.max(state.paletteSize, keep.length + 1));
+    return { harmony: refine.harmony || opt.harmony, colors };
+  });
 }
