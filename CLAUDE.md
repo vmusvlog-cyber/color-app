@@ -17,7 +17,9 @@ The owner is a complete beginner with no coding experience.
   copy one language block and translate it. Color names and palette names live there too.
 - **Routing:** the URL hash (e.g. `#/result/beginner?c=F7F7F5-2B2D42-3A86FF`), so the
   browser Back button works and a palette can be shared by copying the link.
-- **Fonts:** Google Fonts — Tajawal (Arabic) and Inter (English).
+- **Fonts:** Google Fonts — Tajawal (Arabic) and Inter (English) for the UI; font pairings
+  for results are loaded on demand from `js/fonts.js`.
+- **Images:** mood and style pictures are drawn in code (SVG), not photos (owner agreed).
 
 ## File structure
 ```
@@ -28,12 +30,20 @@ js/colors.js      Color math: HEX/HSL, color names, random & regenerated colors
 js/palettes.js    Audiences, the five styles, curated ready palettes
 js/drag.js        Drag-and-drop (mouse + touch) used by free picking
 js/wheel.js       The color wheel drawn on a canvas
-js/app.js         Screens (home, methods, ready, free, result) and navigation
+js/generator.js   Palette generation (quiz answers / user colors), style detection,
+                  color families & meanings, competitor colors, color-name lookup
+js/fonts.js       Font pairings per style (Google Fonts) and the font loader
+js/scenes.js      SVG drawings for the mood and style choices (no photos needed)
+js/describe.js    "Describe your idea" screens: choice, quiz, my colors, 3 options
+js/result.js      Result screen: Polaroids, why, competitors, fonts, previews
+js/app.js         State, home/methods/ready/free screens, navigation (router)
 ```
 
 ## Phase status
 - [x] Phase 1: Home, four sections, ready palettes, Polaroid cards, free picking with drag/delete.
-- [ ] Phase 2
+- [x] Phase 2: Quiz (5 questions, drawn images), "has colors" input (name/HEX/wheel),
+      3 palettes, font pairings, previews. Also added (owner agreed): "Why these colors?"
+      and "stand out from competitors".
 - [ ] Phase 3
 - [ ] Phase 4
 - [ ] Phase 5

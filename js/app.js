@@ -6,6 +6,7 @@
      #/ready/beginner           ← اللوحات الجاهزة
      #/free/beginner            ← الاختيار الحر
      #/result/beginner?c=...    ← شاشة النتيجة (الألوان داخل الرابط، لذلك يمكن مشاركته)
+     شاشات "صِف فكرتك" موجودة في describe.js، وشاشة النتيجة في result.js
    ========================================================================= */
 
 const MAX_COLORS = 8; // أقصى عدد ألوان في لوحة الاختيار الحر
@@ -19,6 +20,15 @@ const state = {
   freeSelected: null,     // رقم اللون المحدد في اللوحة (للحذف)
   suggestions: [],        // ألوان شريط الاقتراحات
   wheel: { h: 210, s: 70, l: 55 }, // اللون المختار في العجلة
+  // المرحلة 2
+  quiz: { step: 0, answers: {} }, // الاستبيان: رقم السؤال والإجابات
+  myColors: [],                   // الألوان التي كتبها المستخدم في "عندي ألوان"
+  options: { hash: null, list: [] }, // اللوحات الثلاث المقترحة
+  lastOptionsHash: null,          // للرجوع من النتيجة إلى اللوحات الثلاث
+  fontIndex: 0,                   // زوج الخطوط المختار
+  fontStyle: null,                // الأسلوب الذي اختير له زوج الخطوط
+  projectName: '',                // اسم المشروع في المعاينات
+  whyOpen: false,                 // هل شرح "لماذا هذه الألوان؟" مفتوح
 };
 
 const app = document.getElementById('app');
@@ -142,7 +152,7 @@ function renderHome() {
 function renderMethods(audience) {
   const methods = [
     { id: 'upload',   icon: '🖼️', soon: true },   // المرحلة 3
-    { id: 'describe', icon: '💬', soon: true },   // المرحلة 2
+    { id: 'describe', icon: '💬', soon: false },
     { id: 'ready',    icon: '🎨', soon: false },
     { id: 'free',     icon: '✋', soon: false },
   ];
@@ -218,7 +228,7 @@ function renderReady(audience) {
       ${palettes.map((p) => {
         const colors = p.colors.slice(0, state.readySize);
         return `
-          <a class="palette-tile" href="#/result/${audience.id}?c=${colorsToParam(colors)}&p=${p.id}&from=ready">
+          <a class="palette-tile" href="#/result/${audience.id}?c=${colorsToParam(colors)}&p=${p.id}&s=${p.style}&from=ready">
             <div class="tile-strip">
               ${colors.map((c) => `<i style="background:${c}" title="${c}"></i>`).join('')}
             </div>
@@ -235,77 +245,6 @@ function renderReady(audience) {
   });
   app.querySelectorAll('.size-toggle button').forEach((btn) => {
     btn.addEventListener('click', () => { state.readySize = Number(btn.dataset.size); renderReady(audience); });
-  });
-}
-
-/* =========================================================================
-   الشاشة 4: النتيجة — بطاقات بولارويد
-   ========================================================================= */
-function renderResult(audience, params) {
-  const colors = paramToColors(params.c);
-  if (colors.length === 0) { location.hash = '#/methods/' + audience.id; return; }
-
-  const weights = ratioWeights(colors.length);
-  const title = params.p ? t('pal.' + params.p) : t('result.title');
-  const backHref = params.from === 'free' ? '#/free/' + audience.id : '#/ready/' + audience.id;
-
-  app.innerHTML = `
-    ${backLink(backHref)}
-    <header class="page-head">
-      <h1>${title}</h1>
-      <p class="lead">${t('result.subtitle')}</p>
-    </header>
-
-    <!-- بطاقات البولارويد: إطار أبيض وأسفل أعرض فيه الاسم والكود -->
-    <div class="polaroid-row">
-      ${colors.map((c, i) => `
-        <figure class="polaroid">
-          <div class="polaroid-color" style="background:${c}; color:${isLight(c) ? '#1a1a1a' : '#ffffff'}">
-            <span class="ratio-badge">${formatPercent(weights[i])}</span>
-          </div>
-          <figcaption>
-            <strong class="color-name">${colorName(c)}</strong>
-            <button type="button" class="hex-btn" data-hex="${c}" dir="ltr">${c}</button>
-            <span class="role">${roleName(i)}</span>
-            <button type="button" class="regen-btn" data-index="${i}">↻ ${t('result.regenerate')}</button>
-          </figcaption>
-        </figure>
-      `).join('')}
-    </div>
-
-    <!-- شريط يوضح قاعدة 60-30-10 بصرياً -->
-    <section class="ratio-box">
-      <h2>${t('result.ratioTitle')}</h2>
-      <div class="ratio-bar">
-        ${colors.map((c, i) => `<span style="flex:${weights[i]}; background:${c}" title="${roleName(i)} ${formatPercent(weights[i])}"></span>`).join('')}
-      </div>
-      <p>${t('result.ratioHint')}</p>
-    </section>
-
-    <div class="actions">
-      <a class="btn btn-primary" href="#/free/${audience.id}?c=${colorsToParam(colors)}">✋ ${t('result.edit')}</a>
-      <a class="btn" href="#/ready/${audience.id}">🎨 ${t('result.backReady')}</a>
-    </div>
-  `;
-
-  // نسخ كود اللون عند الضغط عليه
-  app.querySelectorAll('.hex-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const hex = btn.dataset.hex;
-      if (navigator.clipboard) navigator.clipboard.writeText(hex).catch(() => {});
-      toast(t('result.copied', { n: hex }));
-    });
-  });
-
-  // زر "لون آخر": نغيّر لوناً واحداً ونحدّث الرابط (بدون إضافة خطوة جديدة لزر الرجوع)
-  app.querySelectorAll('.regen-btn').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      const i = Number(btn.dataset.index);
-      colors[i] = regenerateColor(colors, i);
-      const from = params.from ? '&from=' + params.from : '';
-      history.replaceState(null, '', `#/result/${audience.id}?c=${colorsToParam(colors)}${from}`);
-      render(true); // true = لا تقفز لأعلى الصفحة
-    });
   });
 }
 
@@ -534,6 +473,10 @@ function render(keepScroll) {
   else if (screen === 'ready') renderReady(audience);
   else if (screen === 'free') renderFree(audience, params);
   else if (screen === 'result') renderResult(audience, params);
+  else if (screen === 'describe') renderDescribe(audience);
+  else if (screen === 'quiz') renderQuiz(audience, !keepScroll); // تبديل اللغة لا يعيد الاستبيان من البداية
+  else if (screen === 'mycolors') renderMyColors(audience);
+  else if (screen === 'options') renderOptions(audience, params);
   else renderHome();
 
   if (!keepScroll) window.scrollTo(0, 0);
