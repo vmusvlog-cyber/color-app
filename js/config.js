@@ -20,4 +20,4 @@ const SUPABASE_ANON_KEY = 'sb_publishable_xSNBgw6ZqaZNFMxiXlCXAA_tUBpfBpe'; // �
    ثم انسخ "Access Key" وضعه هنا. (لا تضع "Secret key" أبداً)
    إذا تركته فارغاً: يظهر زر يفتح صور Unsplash الملهمة في صفحة جديدة بدل ذلك.
    ========================================================================= */
-const UNSPLASH_ACCESS_KEY = '';
+const UNSPLASH_ACCESS_KEY = 'WqjTZWnWlObEn_uaU4xcKrbbr63eTdcPIkN-ZpUA6qI';
