@@ -88,6 +88,19 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       Result previews: "👁 Where do you want to see your colors?" picker with 8 previews
       (logo, social, room/facade, web, app, card, packaging, menu); only the chosen one shows,
       auto-picked from the answers.
+- [ ] Redesign (owner's 20 answers, customers' feedback "colors too dark, no strength"):
+      Part A — colors: background always light (only Luxury stays dark, or user picks dark);
+      remove all 60-30-10 percentages; palette size 3/4/5 chosen by user (default 5); result
+      shown as a big full-width color strip (no Polaroids); warm/cool makes ALL colors warm/cool
+      incl. neutrals, via a fixed 🔥/❄️ button in the top bar usable anytime; default strength
+      follows mood & style but second color is no longer near-black; conflicting choices are
+      prevented (warm hides cool feelings and vice versa).
+      Part B — images: remove primitive drawings; each preview place gets 3–4 ready English
+      prompts (with the palette's HEX codes) to copy into ChatGPT/Gemini, with one Arabic line
+      explaining it, plus Unsplash inspiration (search button now; in-app photos once the owner
+      gives an Unsplash key; quiz mood/style photos also need that key).
+      Part C — the owner's 10 marketing techniques: a "Technique" row in the Refine panel; each
+      uses its ORIGINAL colors; short explanation + "More" for details; added to the prompts.
 - [ ] Phase 6
 
 ---
