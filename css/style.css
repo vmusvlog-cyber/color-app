@@ -275,7 +275,7 @@ h2 { font-size: 1.1rem; font-weight: 700; }
 /* ---------- الاختيار الحر ---------- */
 .my-palette {
   position: sticky;           /* تبقى لوحتك ظاهرة أثناء التمرير */
-  top: 0;
+  top: env(safe-area-inset-top, 0px); /* لا تختفي تحت شريط الساعة في الجوال */
   z-index: 5;
   background: rgba(255,255,255,.96);
   backdrop-filter: blur(6px);
