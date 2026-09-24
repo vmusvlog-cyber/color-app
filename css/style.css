@@ -545,7 +545,7 @@ h2 { font-size: 1.1rem; font-weight: 700; }
 
 /* المعاينات */
 .name-input { display: block; width: 100%; max-width: 360px; }
-.previews { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 18px; }
+.previews { margin: 18px auto 0; max-width: 560px; } /* معاينة واحدة: المكان المختار */
 .pv { margin: 0; }
 .pv.wide { grid-column: 1 / -1; }
 .pv figcaption { text-align: center; color: var(--muted); font-size: .88rem; margin-top: 8px; }
@@ -577,10 +577,8 @@ h2 { font-size: 1.1rem; font-weight: 700; }
 .pv-hero-title { font-size: clamp(1.4rem, 3.5vw, 2.2rem); line-height: 1.2; }
 
 @media (max-width: 900px) {
-  .previews { grid-template-columns: repeat(2, 1fr); }
 }
 @media (max-width: 560px) {
-  .previews { grid-template-columns: 1fr; }
   .grad-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
   .choice-images { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .choice-chip { padding: 10px 16px; }
@@ -810,6 +808,59 @@ body.no-scroll { overflow: hidden; }
 @media (max-width: 700px) {
   .refine-row { grid-template-columns: 1fr; }
   .refine-panel { padding: 14px 12px 4px; }
+}
+
+/* ---------- أين تريد أن ترى ألوانك؟ ---------- */
+.preview-pick-title { font-size: 1.05rem; margin: 22px 0 10px; }
+.preview-picker { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; }
+.preview-kind {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border: 2px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg);
+  font-size: .8rem;
+  font-weight: 600;
+  text-align: center;
+}
+.preview-kind:hover { border-color: #CFCFD4; }
+.preview-kind.selected { border-color: var(--primary); background: var(--surface); }
+.preview-icon { font-size: 1.5rem; line-height: 1; }
+
+.pv-scene { border-radius: 12px; overflow: hidden; background: var(--surface); }
+.pv-scene svg { display: block; width: 100%; height: auto; }
+
+/* شاشة تطبيق الجوال */
+.pv-phone {
+  width: 250px;
+  max-width: 100%;
+  margin: 0 auto;
+  border: 8px solid #1C1C1E;
+  border-radius: 30px !important;
+  display: flex;
+  flex-direction: column;
+  min-height: 430px;
+}
+.pv-phone-top { display: flex; align-items: center; gap: 8px; padding: 18px 14px 14px; }
+.pv-phone-body { flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px 14px; }
+.pv-phone-card { border-radius: 14px; padding: 22px 14px; font-weight: 600; }
+.pv-phone-row { display: flex; gap: 8px; }
+.pv-phone-row span { flex: 1; height: 54px; border-radius: 12px; }
+.pv-phone-nav { display: flex; justify-content: space-around; padding: 12px; border-top: 1px solid; }
+.pv-phone-nav i { width: 22px; height: 22px; border-radius: 7px; }
+
+/* قائمة الطعام */
+.pv-menu { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 28px 30px 0; }
+.pv-menu-name { font-size: 1.7rem; }
+.pv-menu-title { font-weight: 700; letter-spacing: .04em; }
+.pv-menu-item { display: flex; justify-content: space-between; width: 100%; padding: 8px 0; border-bottom: 1px dashed; }
+.pv-menu-bar { align-self: stretch; height: 10px; margin: 16px -30px 0; }
+
+@media (max-width: 700px) {
+  .preview-picker { grid-template-columns: repeat(4, 1fr); }
 }
 
 /* =========================================================================

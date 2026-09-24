@@ -7,15 +7,48 @@
      #/options/beginner?.. ← 3 لوحات مقترحة
    ========================================================================= */
 
-/* أسئلة الاستبيان بالترتيب. type: 'text' = أزرار كلام، 'mood'/'style' = صور */
-const QUIZ = [
-  { key: 'industry', type: 'text', options: ['food', 'fashion', 'tech', 'health', 'education', 'finance', 'home', 'kids', 'creative', 'other'], label: 'ind.' },
-  { key: 'who',      type: 'text', options: ['kids', 'youth', 'women', 'men', 'families', 'professionals', 'everyone'], label: 'who.' },
-  { key: 'use',      type: 'text', options: ['social', 'brand', 'web', 'print', 'slides'], label: 'use.' },
-  { key: 'feel',     type: 'text', options: ['auto', ...Object.keys(FEELINGS)], label: 'refine.feel.' },
-  { key: 'mood',     type: 'mood', options: Object.keys(MOODS), label: 'mood.' },
-  { key: 'style',    type: 'style', options: STYLES, label: 'style.' },
-];
+/*
+  خيارات السؤالين الثاني والثالث حسب كل مجال.
+  who   = من جمهورك؟        use = أين ستستخدم الألوان؟
+  space = أي مكان تريد تلوينه؟ (للسكن والديكور بدل "من جمهورك")
+  ترتيب المجالات هنا هو ترتيبها في السؤال الأول.
+*/
+const FIELD_QUESTIONS = {
+  food:      { who: ['families', 'youth', 'customers', 'kids', 'everyone'], use: ['menu', 'sign', 'packaging', 'interior', 'social', 'app'] },
+  fashion:   { who: ['women', 'men', 'kids', 'youth', 'everyone'], use: ['store', 'packaging', 'clothing', 'social', 'web', 'brand'] },
+  tech:      { who: ['youth', 'professionals', 'students', 'everyone'], use: ['app', 'web', 'brand', 'social', 'slides'] },
+  health:    { who: ['families', 'women', 'men', 'elderly', 'everyone'], use: ['interior', 'brand', 'web', 'app', 'social', 'print'] },
+  education: { who: ['kids', 'students', 'parents', 'professionals'], use: ['interior', 'slides', 'print', 'web', 'app', 'social'] },
+  finance:   { who: ['professionals', 'customers', 'youth'], use: ['brand', 'web', 'app', 'slides', 'print'] },
+  home:      { space: ['apartment', 'living', 'bedroom', 'kitchen', 'kidsroom', 'office', 'restaurant', 'cafe', 'shop', 'facade'],
+               use: ['walls', 'furniture', 'floors', 'accessories', 'whole'] },
+  kids:      { who: ['babies', 'kids', 'parents'], use: ['packaging', 'clothing', 'interior', 'social', 'brand', 'print'] },
+  creative:  { who: ['youth', 'customers', 'everyone'], use: ['web', 'social', 'brand', 'print', 'packaging'] },
+  other:     { who: ['kids', 'youth', 'women', 'men', 'families', 'professionals', 'everyone'], use: ['social', 'brand', 'web', 'print', 'slides'] },
+};
+
+/*
+  أسئلة الاستبيان (6) بالترتيب. تتغير حسب إجابة السؤال الأول (المجال).
+  type: 'text' = أزرار كلام، 'mood'/'style' = صور
+  title = مفتاح نص السؤال (إن لم يوجد نستخدم 'q.' + key)
+*/
+function quizSteps(answers) {
+  const field = FIELD_QUESTIONS[answers.industry] || FIELD_QUESTIONS.other;
+  const second = field.space
+    ? { key: 'space', type: 'text', options: field.space, label: 'space.' }
+    : { key: 'who', type: 'text', options: field.who, label: 'who.' };
+  return [
+    { key: 'industry', type: 'text', options: Object.keys(FIELD_QUESTIONS), label: 'ind.' },
+    second,
+    { key: 'use', type: 'text', options: field.use, label: 'use.', title: field.space ? 'q.use.home' : 'q.use' },
+    { key: 'feel', type: 'text', options: ['auto', ...Object.keys(FEELINGS)], label: 'refine.feel.' },
+    { key: 'mood', type: 'mood', options: Object.keys(MOODS), label: 'mood.' },
+    { key: 'style', type: 'style', options: STYLES, label: 'style.' },
+  ];
+}
+
+/* قائمة المجالات (يستخدمها المعرض أيضاً في فلتر "المجال") */
+const QUIZ = quizSteps({});
 
 /* ---------- سؤال البداية: مبتدئ أم عندك ألوان؟ ---------- */
 function renderDescribe(audience) {
@@ -43,8 +76,9 @@ function renderDescribe(audience) {
 /* ---------- الاستبيان: سؤال واحد في كل مرة ---------- */
 function renderQuiz(audience, fresh) {
   if (fresh) state.quiz = { step: 0, answers: {} }; // نبدأ من جديد عند الدخول للشاشة
-  const q = QUIZ[state.quiz.step];
-  const total = QUIZ.length;
+  const steps = quizSteps(state.quiz.answers);
+  const q = steps[state.quiz.step];
+  const total = steps.length;
   const chosen = state.quiz.answers[q.key];
 
   // شكل كل خيار حسب نوع السؤال
@@ -70,7 +104,7 @@ function renderQuiz(audience, fresh) {
     <div class="quiz">
       <p class="eyebrow">${t('quiz.step', { n: state.quiz.step + 1, total })}</p>
       <div class="progress"><span style="width:${((state.quiz.step + 1) / total) * 100}%"></span></div>
-      <h1>${t('q.' + q.key)}</h1>
+      <h1>${t(q.title || 'q.' + q.key)}</h1>
       <div class="${q.type === 'text' ? 'choice-chips' : 'choice-images'}">
         ${q.options.map(optionHtml).join('')}
       </div>
@@ -81,6 +115,12 @@ function renderQuiz(audience, fresh) {
   // الضغط على خيار: نحفظ الإجابة وننتقل مباشرة للسؤال التالي
   app.querySelectorAll('[data-value]').forEach((btn) => {
     btn.addEventListener('click', () => {
+      // إذا غيّر المستخدم المجال، نمسح إجابات السؤالين التاليين لأن خياراتهما تتغير
+      if (q.key === 'industry' && state.quiz.answers.industry !== btn.dataset.value) {
+        delete state.quiz.answers.who;
+        delete state.quiz.answers.space;
+        delete state.quiz.answers.use;
+      }
       state.quiz.answers[q.key] = btn.dataset.value;
       if (state.quiz.step < total - 1) {
         state.quiz.step++;
@@ -91,7 +131,9 @@ function renderQuiz(audience, fresh) {
         const a = state.quiz.answers;
         // إجابة الإحساس تصبح أول اختيار في لوحة "دقّق النتيجة" (ويمكن تغييرها هناك)
         state.refine = { ...defaultRefine(), feel: a.feel === 'auto' ? '' : a.feel };
-        location.hash = `#/options/${audience.id}?mode=quiz&ind=${a.industry}&who=${a.who}&use=${a.use}&mood=${a.mood}&s=${a.style}`;
+        state.previewKind = null; // المعاينة تُختار تلقائياً حسب الإجابات الجديدة
+        const place = a.space ? '&space=' + a.space : '&who=' + a.who;
+        location.hash = `#/options/${audience.id}?mode=quiz&ind=${a.industry}${place}&use=${a.use}&mood=${a.mood}&s=${a.style}`;
       }
     });
   });
@@ -214,7 +256,11 @@ function renderOptions(audience, params) {
   state.lastOptionsHash = location.hash; // لزر الرجوع من شاشة النتيجة
 
   // المعلومات التي ننقلها لشاشة النتيجة (المجال والأسلوب)
-  const extra = (params.ind ? '&ind=' + params.ind : '') + (params.s ? '&s=' + params.s : '');
+  // المعلومات التي ننقلها لشاشة النتيجة (المجال، الأسلوب، ومكان الاستخدام لاختيار المعاينة)
+  const extra = ['ind', 's', 'use', 'space']
+    .filter((k) => params[k])
+    .map((k) => '&' + k + '=' + params[k])
+    .join('');
   let backHref = '#/describe/' + audience.id;
   if (params.mode === 'colors') backHref = '#/mycolors/' + audience.id;
   if (params.mode === 'image') backHref = '#/upload/' + audience.id;
@@ -281,7 +327,7 @@ function makeOptions(params) {
     list = generateAroundColors(bases.length ? bases : ['#3A86FF']);
   } else {
     list = generateFromAnswers({
-      industry: params.ind, who: params.who, use: params.use, mood: params.mood, style: params.s,
+      industry: params.ind, who: params.who, space: params.space, use: params.use, mood: params.mood, style: params.s,
     }, refine);
   }
 

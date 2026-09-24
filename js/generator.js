@@ -77,6 +77,9 @@ function generateFromAnswers(answers, refine = defaultRefine()) {
   if (answers.who === 'kids') satMul *= 1.2;                 // الأطفال: ألوان أقوى
   if (answers.who === 'professionals') satMul *= 0.8;        // الشركات: ألوان أهدأ
   const maxSat = answers.use === 'print' ? 80 : 100;         // الطباعة: نتجنب الألوان الفسفورية
+  // الأماكن (سكن وديكور): الجدران والمساحات الكبيرة تحتاج ألواناً أهدأ، وغرفة الأطفال أكثر مرحاً
+  if (answers.space) satMul *= answers.space === 'kidsroom' ? 1.15 : answers.space === 'facade' ? 0.7 : 0.85;
+  if (answers.use === 'walls') satMul *= 0.85;
 
   // c = تصنع لوناً مع تطبيق التعديلات السابقة
   const c = (h, s, l) => hslToHex(h, Math.min(s * satMul, maxSat), l);

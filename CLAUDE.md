@@ -82,6 +82,12 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       hue, mood sets intensity). User's own colors are never changed. Brand roles: primary,
       secondary, accent, neutral, support. Labels: simple word + small hint.
 - [x] Extra: result cards have previous/next arrows with per-color history (2/3 counter).
+- [x] Extra (owner's answers): quiz questions 2 and 3 depend on the field (FIELD_QUESTIONS in
+      describe.js); "Homes, decor & places" asks which place (apartment, rooms, office,
+      restaurant, café, shop, facade) and where (walls, furniture, floors, accessories).
+      Result previews: "👁 Where do you want to see your colors?" picker with 8 previews
+      (logo, social, room/facade, web, app, card, packaging, menu); only the chosen one shows,
+      auto-picked from the answers.
 - [ ] Phase 6
 
 ---

@@ -31,6 +31,7 @@ const state = {
   whyOpen: false,                 // هل شرح "لماذا هذه الألوان؟" مفتوح
   colorHistory: null,             // الألوان السابقة لكل بطاقة في النتيجة (للسهمين)
   refine: defaultRefine(),        // اختيارات "دقّق النتيجة"
+  previewKind: null,              // المعاينة المختارة (null = نختار حسب الإجابات)
   // المرحلة 3
   upload: null,                   // الصورة المرفوعة وألوانها
   view: { gradients: false, dark: false, print: false }, // خيارات العرض
