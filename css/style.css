@@ -1332,3 +1332,21 @@ html[dir="rtl"] .page-head h1::after, html[dir="rtl"] .section-title::after { tr
   .review-swatch { min-height: 96px; padding-inline-end: 56px; }
   .review-nav { justify-content: flex-end; }
 }
+
+/* خطوة الخط: بطاقة واحدة كبيرة + أزرار الخطوط */
+.brand-font-one { grid-template-columns: 1fr !important; max-width: 640px; }
+.font-pick-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 16px; }
+
+/* خطوة "تصاميمك" */
+.dz-tabs { margin: 10px 0 18px; }
+.dz-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: start; }
+.dz-card { background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; display: grid; gap: 10px; }
+.dz-name { margin: 0; font-weight: 700; color: var(--heading); }
+.dz-canvas { width: 100%; height: auto; border-radius: 10px; cursor: pointer; box-shadow: inset 0 0 0 1px rgba(0,0,0,.06); max-height: 560px; object-fit: contain; }
+.dz-edit[hidden] { display: none; }
+.dz-edit p { margin: 0 0 6px; }
+.dz-swatches { display: flex; flex-wrap: wrap; gap: 8px; }
+.swatch-pick.small { width: 38px; height: 38px; }
+.dz-actions { display: flex; flex-wrap: wrap; gap: 6px; }
+@media (max-width: 900px) { .dz-list { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 560px) { .dz-list { grid-template-columns: 1fr; } }

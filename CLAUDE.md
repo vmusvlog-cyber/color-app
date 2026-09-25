@@ -64,6 +64,10 @@ js/brand.js       "Build your visual identity" (#/brand): 4 steps — colors (ph
 js/brandquiz.js   The 12 brand questions (who, field, audience, traits, feeling, where used, price,
                   competitors, love colors, avoid colors, color look, how many colors) → profile
                   → 3 palettes; color circles with a slide-up "Swap" button
+js/branddesigns.js "Your designs" step: 3 canvas designs per chosen channel (DZ_CHANNELS: instagram,
+                  tiktok, youtube, snapchat, facebook, linkedin, website, app, shop, packaging, print,
+                  signage, uniform, events), tap a part → recolor (palette + white/black), undo, reset,
+                  PNG; the edited designs become extra PDF pages (pageDesigns)
 js/brandpages.js  Canvas drawing of the 12 A4 guide pages: cover, logo (wordmark/monogram/mark),
                   colors, fonts, business card, stationery, email signature, Instagram (profile,
                   highlight covers, post, story), Facebook & LinkedIn, TikTok & YouTube (cover,
@@ -170,6 +174,13 @@ NEXT-STEPS.md        Saved list of agreed next options (email, name, testing, Ph
       fixes black→black) and ← to go back. "Color look" (solid / 2-color
       gradient / 3-color gradient / transparent shapes) is drawn on the cover, posts, story,
       highlights, Facebook cover, TikTok cover and website, and added to the prompts.
+      Steps are now 5 (owner's 5 answers): colors → font → details → designs → guide.
+      Font step: 2 quick questions (shape 8 options, weight 3) rank ALL_FONT_PAIRS; then ONE big
+      sample card + chips for the top 3, "Another font", and ← back through the font history.
+      Designs step: channel tabs from the "where used" answer (default instagram/website/print),
+      3 designs each; tap any part (bg, title, text, logo, button, band, shape, frame) → dashed
+      outline + color circles (palette + white + black); Undo / Original colors / Download PNG.
+      PDF = 11 fixed pages + one "<place> designs" page per channel + prompts page.
 - [ ] Phase 6
 
 ---

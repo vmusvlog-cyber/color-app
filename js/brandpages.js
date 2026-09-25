@@ -15,17 +15,25 @@ const HAS_AR = /[؀-ۿ]/;
 async function drawBrandPages(kit, prompts) {
   const k = brandDrawKit(kit);
   await waitForFonts([k.head, k.body, k.enHead, k.enBody]);
-  const pages = [pageCover, pageLogo, pageColors, pageFonts, pageCard, pageStationery,
-    pageSignature, pageInstagram, pageFacebook, pageVideo, pageWebsite, pagePrompts];
-  return pages.map((draw, i) => {
+  // الصفحات الثابتة، ثم صفحة لكل مكان اختاره العميل (تصاميمه)، ثم أوامر الصور في الآخر
+  const fixed = [pageCover, pageLogo, pageColors, pageFonts, pageCard, pageStationery,
+    pageSignature, pageInstagram, pageFacebook, pageVideo, pageWebsite]
+    .map((draw, i) => ({ draw, name: t('brand.pageName.' + (i + 1)) }));
+  const designPages = (kit.channels || []).map((ch) => ({
+    draw: (ctx) => pageDesigns(ctx, k, ch, kit.dz || {}),
+    name: t('dz.pageName', { place: t('bq.use.' + ch) }),
+  }));
+  const pages = [...fixed, ...designPages, { draw: pagePrompts, name: t('brand.pageName.12') }];
+  return pages.map((page, i) => {
     const canvas = document.createElement('canvas');
     canvas.width = PAGE_W;
     canvas.height = PAGE_H;
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#FFFFFF';
     ctx.fillRect(0, 0, PAGE_W, PAGE_H);
-    if (i > 0) pageFrame(ctx, k, i + 1);
-    draw(ctx, k, prompts);
+    if (i > 0) pageFrame(ctx, k, i + 1, page.name);
+    page.draw(ctx, k, prompts);
+    canvas.pageName = page.name; // اسم الصفحة يظهر تحت صورتها في التطبيق
     return canvas;
   });
 }
@@ -216,10 +224,10 @@ function sideX(k, left = PAGE_M) { return k.ar ? PAGE_W - left : left; }
 function sideAlign(k) { return k.ar ? 'right' : 'left'; }
 
 /* إطار الصفحات (ما عدا الغلاف): رقم الصفحة، العنوان، اسم البراند، شريط الألوان في الأسفل */
-function pageFrame(ctx, k, n) {
+function pageFrame(ctx, k, n, title) {
   const num = String(n).padStart(2, '0');
   drawText(ctx, num, sideX(k), 130, { size: 30, font: k.enHead, weight: 700, color: k.main, align: sideAlign(k) });
-  drawText(ctx, t('brand.pageName.' + n), sideX(k), 190, { size: 52, font: k.head, weight: 700, color: k.dark, align: sideAlign(k) });
+  drawText(ctx, title, sideX(k), 190, { size: 52, font: k.head, weight: 700, color: k.dark, align: sideAlign(k) });
   drawText(ctx, k.name, k.ar ? PAGE_M : PAGE_W - PAGE_M, 130, { size: 24, font: k.head, weight: 700, color: '#8A8A8E', align: k.ar ? 'left' : 'right' });
   paletteStrip(ctx, k.colors, k.ar ? PAGE_W - PAGE_M - 110 : PAGE_M, 220, 110, 8);
   paletteStrip(ctx, k.colors, 0, PAGE_H - 18, PAGE_W, 18);

@@ -27,7 +27,7 @@ function newBrandState() {
 function renderBrand() {
   if (!state.brand) state.brand = newBrandState();
   const b = state.brand;
-  const steps = ['colors', 'font', 'info', 'guide'];
+  const steps = ['colors', 'font', 'info', 'designs', 'guide'];
   const current = steps.indexOf(b.step);
 
   app.innerHTML = `
@@ -51,13 +51,18 @@ function renderBrand() {
       else if (b.options.length) b.options = [];
       else b.q--;
     }
-    else b.step = steps[current - 1];
+    else if (b.step === 'font' && b.fontStage > 0) b.fontStage--; // أسئلة الخط: سؤال للخلف
+    else {
+      b.step = steps[current - 1];
+      if (b.step === 'colors') b.review = true;       // نرجع لشاشة "لوحتك"
+    }
     renderBrand();
   });
 
   if (b.step === 'colors') renderBrandColors();
   else if (b.step === 'font') renderBrandFont();
   else if (b.step === 'info') renderBrandInfo();
+  else if (b.step === 'designs') renderBrandDesigns();
   else renderBrandGuide();
 }
 
@@ -285,7 +290,7 @@ function renderBrandReview() {
   enableReviewDrag();
 
   document.getElementById('brand-next').addEventListener('click', () => {
-    b.fontIndex = 0;
+    b.fontStage = 0;   // أسئلة الخط من البداية
     b.step = 'font';
     renderBrand();
     window.scrollTo(0, 0);
@@ -361,23 +366,107 @@ function brandFromPhoto(file) {
   img.src = src;
 }
 
-/* ---------- الخطوة 2: الخط ---------- */
+/* ---------- الخطوة 2: الخط ----------
+   سؤالان سريعان (الشكل، السُّمك) ← بطاقة كبيرة + أزرار الخطوط المقترحة
+   + "خط آخر" + سهم ← للرجوع إلى الخط السابق */
+const FONT_QUESTIONS = [
+  { key: 'shape', options: ['modern', 'classic', 'luxury', 'playful', 'strong', 'soft', 'vintage', 'simple'] },
+  { key: 'weight', options: ['bold', 'medium', 'light'] },
+];
+/* كل شكل ← الأساليب والنصائح الأقرب له في fonts.js */
+const FONT_SHAPE_MATCH = {
+  modern: [['minimal', 'bold'], ['modern', 'clean']], classic: [['earthy', 'luxury'], ['classic']],
+  luxury: [['luxury'], ['elegant', 'classic']], playful: [['retro', 'bold'], ['playful']],
+  strong: [['bold'], ['strong']], soft: [['earthy', 'minimal'], ['warm', 'clean']],
+  vintage: [['retro'], ['vintage', 'elegant']], simple: [['minimal'], ['clean']],
+};
+
+/* يرتّب كل الأزواج من الأنسب إلى الأبعد حسب الإجابتين */
+function rankFonts(fq) {
+  const [styles, advice] = FONT_SHAPE_MATCH[fq.shape] || [[state.brand.style], []];
+  const score = (p) => {
+    let s = 0;
+    const si = styles.indexOf(p.style);
+    if (si >= 0) s += 3 - si;
+    if (advice.includes(p.advice)) s += 2;
+    const heavy = SINGLE_WEIGHT_FONTS.includes(p.en[0]) || p.advice === 'strong';
+    if (fq.weight === 'bold' && heavy) s += 1.5;
+    if (fq.weight === 'light' && ['clean', 'elegant'].includes(p.advice)) s += 1.5;
+    if (fq.weight === 'light' && heavy) s -= 2;
+    return s;
+  };
+  return ALL_FONT_PAIRS.map((p, i) => ({ i, s: score(p) })).sort((a, b) => b.s - a.s).map((x) => x.i);
+}
+
 function renderBrandFont() {
   const b = state.brand;
-  loadFontsForStyle(b.style);
-  const pairs = fontPairsFor(b.style);
+  if (!b.fq) b.fq = {};
   const body = document.getElementById('brand-body');
+
+  // السؤالان الأولان: جواب واحد وينتقل فوراً
+  if ((b.fontStage || 0) < FONT_QUESTIONS.length) {
+    const q = FONT_QUESTIONS[b.fontStage || 0];
+    body.innerHTML = `
+      <div class="quiz">
+        <p class="eyebrow">${t('quiz.step', { n: (b.fontStage || 0) + 1, total: FONT_QUESTIONS.length })}</p>
+        <h1>${t('fq.' + q.key)}</h1>
+        <div class="choice-chips">
+          ${q.options.map((o) => `<button type="button" class="choice-chip ${b.fq[q.key] === o ? 'selected' : ''}" data-value="${o}">${t('fq.' + q.key + '.' + o)}</button>`).join('')}
+        </div>
+      </div>`;
+    body.querySelectorAll('[data-value]').forEach((btn) => btn.addEventListener('click', () => {
+      b.fq[q.key] = btn.dataset.value;
+      b.fontStage = (b.fontStage || 0) + 1;
+      if (b.fontStage === FONT_QUESTIONS.length) {
+        // نبدأ الاختيار: الترتيب الجديد، والخط الأول المقترح، وسجل جديد
+        b.fontRank = rankFonts(b.fq);
+        b.fontHist = { list: [b.fontRank[0]], pos: 0 };
+      }
+      renderBrandFont();
+      window.scrollTo(0, 0);
+    }));
+    return;
+  }
+
+  // الاختيار: بطاقة كبيرة للخط الحالي + أزرار الخطوط المقترحة
+  const h = b.fontHist;
+  const current = h.list[h.pos];
+  const pair = ALL_FONT_PAIRS[current];
+  loadFontPair(pair);
+  const suggested = b.fontRank.slice(0, 3);
+  const name = (p) => (currentLang === 'ar' ? p.ar[0] : p.en[0]);
   body.innerHTML = `
     <h2 class="section-title">${t('brand.fontTitle')}</h2>
-    <p class="small-hint">${t('brand.fontHint')}</p>
-    <div class="font-list brand-fonts">${pairs.map((p, i) => fontCardHtml(p, i, b.colors, b.fontIndex)).join('')}</div>
+    <p class="small-hint">${t('brand.fontHint2')}</p>
+    <div class="font-list brand-font-one">${fontCardHtml(pair, current, b.colors, current)}</div>
+    <div class="font-pick-row">
+      <button type="button" class="regen-arrow" id="font-back" ${h.pos === 0 ? 'disabled' : ''} aria-label="${t('fq.prev')}" title="${t('fq.prev')}">
+        <span class="back-arrow" aria-hidden="true">←</span></button>
+      ${suggested.map((i) => `<button type="button" class="choice-chip small ${i === current ? 'selected' : ''}" data-font="${i}">${name(ALL_FONT_PAIRS[i])}</button>`).join('')}
+      <button type="button" class="choice-chip small" id="font-more">${t('fq.more')}</button>
+    </div>
     <div class="actions"><button type="button" class="btn btn-primary" id="brand-next">${t('brand.next')}</button></div>
   `;
-  body.querySelectorAll('.font-card').forEach((btn) => btn.addEventListener('click', () => {
-    b.fontIndex = Number(btn.dataset.index);
+  // اختيار خط: يُضاف للسجل (فنستطيع الرجوع إلى ما قبله)
+  const choose = (i) => {
+    if (i === current) return;
+    h.list = [...h.list.slice(0, h.pos + 1), i];
+    h.pos = h.list.length - 1;
     renderBrandFont();
-  }));
-  document.getElementById('brand-next').addEventListener('click', () => { b.step = 'info'; renderBrand(); window.scrollTo(0, 0); });
+  };
+  body.querySelectorAll('[data-font]').forEach((btn) => btn.addEventListener('click', () => choose(Number(btn.dataset.font))));
+  // "خط آخر": الخط التالي في الترتيب (بعد الثلاثة المقترحة، ثم يلف)
+  document.getElementById('font-more').addEventListener('click', () => {
+    const at = b.fontRank.indexOf(current);
+    choose(b.fontRank[(Math.max(at, 2) + 1) % b.fontRank.length]);
+  });
+  document.getElementById('font-back').addEventListener('click', () => { if (h.pos > 0) { h.pos--; renderBrandFont(); } });
+  document.getElementById('brand-next').addEventListener('click', () => {
+    b.pair = pair;
+    b.step = 'info';
+    renderBrand();
+    window.scrollTo(0, 0);
+  });
 }
 
 /* ---------- الخطوة 3: المعلومات ---------- */
@@ -429,7 +518,7 @@ function renderBrandInfo() {
       form.elements.name.focus();
       return;
     }
-    b.step = 'guide';
+    b.step = 'designs';
     renderBrand();
     window.scrollTo(0, 0);
   });
@@ -441,7 +530,7 @@ function brandKit() {
   const info = Object.fromEntries(Object.entries(b.info).map(([k, v]) => [k, v.trim()]));
   // شكل الألوان: صافية / تدرج لونين / تدرج 3 ألوان / شفافة (يمكن أكثر من واحد)
   const effects = (b.answers.look && b.answers.look.length) ? b.answers.look : ['solid'];
-  return { colors: b.colors, style: b.style, pair: fontPairsFor(b.style)[b.fontIndex], info, answers: b.answers, effects, lang: currentLang };
+  return { colors: b.colors, style: b.style, pair: b.pair || fontPairsFor(b.style)[0], info, dz: b.dz || {}, channels: brandChannels(b.answers), answers: b.answers, effects, lang: currentLang };
 }
 
 /* ---------- الخطوة 4: دليل الهوية ---------- */
@@ -487,7 +576,7 @@ async function renderBrandGuide() {
   }
   if (!document.body.contains(body)) return; // غادر الشاشة أثناء الرسم
   document.getElementById('brand-pages').innerHTML = b.pages.map((c, i) =>
-    `<figure class="brand-page"><img src="${c.toDataURL('image/jpeg', 0.8)}" alt="${t('brand.page', { n: i + 1 })}"><figcaption>${i + 1}. ${t('brand.pageName.' + (i + 1))}</figcaption></figure>`).join('');
+    `<figure class="brand-page"><img src="${c.toDataURL('image/jpeg', 0.8)}" alt="${t('brand.page', { n: i + 1 })}"><figcaption>${i + 1}. ${c.pageName}</figcaption></figure>`).join('');
   document.getElementById('brand-status').textContent = t('brand.ready', { n: b.pages.length });
   const pdfBtn = document.getElementById('brand-pdf');
   pdfBtn.disabled = false;

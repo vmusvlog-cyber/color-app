@@ -77,3 +77,22 @@ function loadFontsForStyle(style) {
   link.href = href;
   document.head.appendChild(link);
 }
+
+/* كل الأزواج في قائمة واحدة (مع اسم أسلوب كل زوج) — تستخدمها أسئلة الخط في "ابنِ هويتك" */
+const ALL_FONT_PAIRS = Object.entries(FONT_PAIRS).flatMap(([style, pairs]) => pairs.map((p) => ({ ...p, style })));
+
+/* يحمّل خطوط زوج واحد من Google Fonts (مرة واحدة لكل زوج) */
+function loadFontPair(pair) {
+  const names = [...new Set([...pair.ar, ...pair.en])];
+  const id = 'fontpair-' + names.join('-').replace(/\s+/g, '');
+  if (document.getElementById(id)) return;
+  const families = names.map((f) => {
+    const name = f.replace(/ /g, '+');
+    return SINGLE_WEIGHT_FONTS.includes(f) ? 'family=' + name : 'family=' + name + ':wght@400;700';
+  });
+  const link = document.createElement('link');
+  link.id = id;
+  link.rel = 'stylesheet';
+  link.href = 'https://fonts.googleapis.com/css2?' + families.join('&') + '&display=swap';
+  document.head.appendChild(link);
+}
