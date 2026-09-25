@@ -1,0 +1,6 @@
+# إعدادات Netlify: نطلب من المتصفح أن يتأكد دائماً من وجود نسخة أحدث
+# (حتى لا يبقى الجوال على ملفات التطبيق القديمة بعد أي تحديث)
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"

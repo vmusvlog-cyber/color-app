@@ -11,6 +11,8 @@ The owner is a complete beginner with no coding experience.
 - **Stack:** plain HTML + CSS + JavaScript. No build step, no frameworks, no npm needed.
   Open `index.html` directly in a browser to run it.
 - **Deploy (free):** Netlify (drag the folder onto app.netlify.com/drop) or GitHub Pages.
+- **Cache busting:** every local script/CSS in index.html has `?v=<version>`; BUMP it on every
+  deploy (phones were showing old files). netlify.toml also sends `max-age=0, must-revalidate`.
 - **Scripts:** classic `<script>` tags (not ES modules) so the app also works when opened
   straight from a file (`file://`).
 - **Translations:** ALL Arabic and English text lives in `js/i18n.js`. To add a language,
